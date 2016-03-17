@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT       += core gui sql network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -13,16 +13,20 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        w_back.cpp \
-    w_modl.cpp \
     tcpserver.cpp \
-    tcpclient.cpp
+    tcpclient.cpp \
+    w_home.cpp \
+    linux_sql.cpp
 
-HEADERS  += w_back.h \
-    w_modl.h \
+HEADERS  += \
     my_define.h \
     tcpserver.h \
-    tcpclient.h
+    tcpclient.h \
+    w_home.h \
+    linux_sql.h
 
 RESOURCES += \
     image.qrc
+
+FORMS += \
+    w_home.ui

@@ -2,8 +2,22 @@
 #define TCPCLIENT_H
 
 #include <QTcpSocket>
-#include <myhelper.h>
 #include <QHostAddress>
+#include <QDesktopWidget>
+#include <QFile>
+#include <QTextCodec>
+#include <QMessageBox>
+#include <QAbstractButton>
+#include <QCoreApplication>
+#include <QFileDialog>
+#include <QTime>
+#include <QProcess>
+#include <QDir>
+#include <QSound>
+#include <QApplication>
+#include <QStyleFactory>
+#include <QInputDialog>
+#include <QDebug>
 class tcpClient : public QTcpSocket
 {
     Q_OBJECT

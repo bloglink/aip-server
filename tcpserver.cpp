@@ -8,8 +8,12 @@ tcpServer::tcpServer(QObject *parent) :
 
 void tcpServer::incomingConnection(int handle)
 {
-    tcpClient *client=new tcpClient(this,handle);
-    client->setSocketDescriptor(handle);
+    tcpClient *client = new tcpClient(this,handle);
+
+    if (!client->setSocketDescriptor(handle)) {
+        emit error(client->error());
+        return;
+    }
 
     connect(client,SIGNAL(ClientReadData(int,QString,int,QByteArray)),this,SIGNAL(ClientReadData(int,QString,int,QByteArray)));
     connect(client,SIGNAL(ClientDisConnect(int,QString,int)),this,SLOT(DisConnect(int,QString,int)));
@@ -21,15 +25,14 @@ void tcpServer::incomingConnection(int handle)
     clientCount++;
 
     //存储当前连接
-    CurrentClient=client;
+    CurrentClient = client;
 }
 
 void tcpServer::DisConnect(int clientID,QString IP,int Port)
 {
-    for (int i=0;i<clientCount;i++)
-    {
-        if (ClientID[i]==clientID)
-        {
+    int i;
+    for (i=0; i<clientCount; i++) {
+        if (ClientID[i]==clientID) {
             ClientList.removeAt(i);//从列表中移除该连接
             ClientID.removeAt(i);
             clientCount--;
@@ -43,10 +46,8 @@ void tcpServer::DisConnect(int clientID,QString IP,int Port)
 //指定客户端连接发消息
 void tcpServer::SendData(int clientID, QByteArray data)
 {
-    for (int i=0;i<clientCount;i++)
-    {
-        if (ClientID[i]==clientID)
-        {
+    for (int i=0;i<clientCount;i++) {
+        if (ClientID[i] == clientID) {
             ClientList[i]->write(data);
             break;
         }
@@ -56,8 +57,8 @@ void tcpServer::SendData(int clientID, QByteArray data)
 //对当前连接发送数据
 void tcpServer::SendDataCurrent(QByteArray data)
 {
-    //如果没有一个存在的连接，则不处理
-    if (clientCount<1){return;}
+    if (clientCount<1)
+        return;
     CurrentClient->write(data);
 }
 
@@ -65,16 +66,14 @@ void tcpServer::SendDataCurrent(QByteArray data)
 void tcpServer::SendDataAll(QByteArray data)
 {
     for (int i=0;i<clientCount;i++)
-    {
         ClientList[i]->write(data);
-    }
 }
 
 void tcpServer::CloseAllClient()
 {
-    for (int i=0;i<clientCount;i++)
-    {
+    int i;
+    for (i=0; i<clientCount; i++) {
         ClientList[i]->close();
-        i--;//不然的话，永远只会断开第一个连接
+        i--;
     }
 }
