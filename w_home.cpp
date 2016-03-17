@@ -31,7 +31,7 @@ w_Home::w_Home(QWidget *parent) :
 
     QTimer *timer = new QTimer(this);
     connect (timer,SIGNAL(timeout()),this,SLOT(heartBeat()));
-    timer->start(1000);
+    timer->start(5000);
 }
 
 w_Home::~w_Home()
@@ -41,17 +41,16 @@ w_Home::~w_Home()
 
 void w_Home::ClientReadData(int clientID,QString IP,int Port,QByteArray data)
 {
-    qDebug()<<clientID;
-    qDebug()<<IP;
-    qDebug()<<Port;
     int i;
-    if (!data.isEmpty())
-    {
-        if (data.toInt() == 0xfe) {
-            for (i=0; i<ip.size(); i++) {
-                if (ip[i] == IP)
-                    heartCount[i] = 0;
-            }
+    QString str;
+    str.append(QString::number(clientID));
+    str.append(IP);
+    str.append(QString::number(Port));
+    str.append(data);
+    if (!data.isEmpty()){
+        for (i=0; i<ip.size(); i++) {
+            if (ip[i] == IP)
+                heartCount[i] = 0;
         }
         ui->lineEditData->setText(data);
     }
@@ -76,6 +75,7 @@ void w_Home::ClientConnect(int clientID,QString IP,int Port)
         port[i] = QString::number(Port);
         time[i] = QTime::currentTime().toString();
         status[i] = tr("上线");
+        heartCount[i] = 0;
     }
 
     updateShow();
@@ -91,13 +91,7 @@ void w_Home::ClientDisConnect(int clientID,QString IP,int Port)
             port.removeAt(i);
             time.removeAt(i);
             status.removeAt(i);
-
-            id.append(QString::number(clientID));
-            ip.append(IP);
-            port.append(QString::number(Port));
-            time.append(QTime::currentTime().toString());
-            status.append(tr("下线"));
-            heartCount.append(0);
+            heartCount.removeAt(i);
             break;
         }
     }
@@ -148,9 +142,9 @@ void w_Home::heartBeat()
     for (i=0; i<ip.size(); i++) {
         server->SendData(id[i].toInt(),QString::number(heart).toUtf8());
         heartCount[i]++;
-//        if (heartCount[i] > 10)
-//            server->CloseAllClient();
-
+        qDebug()<<heartCount[i];
+        if (heartCount[i] > 3)
+            ClientDisConnect(id[i].toInt(),ip[i],port[i].toInt());
     }
 }
 
