@@ -5,7 +5,6 @@
 #include <tcpclient.h>
 #include <tcpserver.h>
 #include <QByteArray>
-#include <QTimer>
 
 namespace Ui {
 class w_Home;
@@ -32,7 +31,7 @@ private slots:
     void ClientConnect(int clientID,QString IP,int Port);
     void ClientDisConnect(int clientID,QString IP,int Port);
     void updateShow();
-    void heartBeat();
+
 
     void on_pushButton_clicked();
 
@@ -43,7 +42,7 @@ public:
     QStringList port;
     QStringList time;
     QStringList status;
-    QList<int> heartCount;
+
 
 };
 

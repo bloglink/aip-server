@@ -10,11 +10,13 @@ w_Home::w_Home(QWidget *parent) :
     isServerOn = false;
 
     QStringList str;
-    str.append(tr("ID号"));
-    str.append(tr("IP地址"));
+    str.append(tr("ID"));
+    str.append(tr("IP"));
     str.append(tr("端口号"));
     str.append(tr("时间"));
     str.append(tr("状态"));
+    str.append(tr("出厂编号"));
+    str.append(tr("MAC地址"));
 
     ui->tableWidget->setColumnCount(str.size());
     ui->tableWidget->setHorizontalHeaderLabels(str);
@@ -28,10 +30,6 @@ w_Home::w_Home(QWidget *parent) :
             this,SLOT(ClientDisConnect(int,QString,int)));
     connect(server,SIGNAL(ClientReadData(int,QString,int,QByteArray)),
             this,SLOT(ClientReadData(int,QString,int,QByteArray)));
-
-    QTimer *timer = new QTimer(this);
-    connect (timer,SIGNAL(timeout()),this,SLOT(heartBeat()));
-    timer->start(5000);
 }
 
 w_Home::~w_Home()
@@ -41,17 +39,14 @@ w_Home::~w_Home()
 
 void w_Home::ClientReadData(int clientID,QString IP,int Port,QByteArray data)
 {
-    int i;
     QString str;
-    str.append(QString::number(clientID));
-    str.append(IP);
-    str.append(QString::number(Port));
-    str.append(data);
+    server->clearHeart(clientID);
+
     if (!data.isEmpty()){
-        for (i=0; i<ip.size(); i++) {
-            if (ip[i] == IP)
-                heartCount[i] = 0;
-        }
+        str.append(QString::number(clientID));
+        str.append(IP);
+        str.append(QString::number(Port));
+        str.append(data);
         ui->lineEditData->setText(data);
     }
 }
@@ -69,19 +64,17 @@ void w_Home::ClientConnect(int clientID,QString IP,int Port)
         port.append(QString::number(Port));
         time.append(QTime::currentTime().toString());
         status.append(tr("上线"));
-        heartCount.append(0);
     } else {
         id[i] = QString::number(clientID);
         port[i] = QString::number(Port);
         time[i] = QTime::currentTime().toString();
         status[i] = tr("上线");
-        heartCount[i] = 0;
     }
 
     updateShow();
 }
 
-void w_Home::ClientDisConnect(int clientID,QString IP,int Port)
+void w_Home::ClientDisConnect(int,QString IP,int)
 {
     int i;
     for (i=0; i<ip.size(); i++) {
@@ -91,7 +84,6 @@ void w_Home::ClientDisConnect(int clientID,QString IP,int Port)
             port.removeAt(i);
             time.removeAt(i);
             status.removeAt(i);
-            heartCount.removeAt(i);
             break;
         }
     }
@@ -133,18 +125,6 @@ void w_Home::updateShow()
         QTableWidgetItem *pItem = new QTableWidgetItem(status[i]);
         pItem->setTextAlignment(Qt::AlignCenter);
         ui->tableWidget->setItem(i,4,pItem);
-    }
-}
-void w_Home::heartBeat()
-{
-    int i;
-    int heart = 0xfe;
-    for (i=0; i<ip.size(); i++) {
-        server->SendData(id[i].toInt(),QString::number(heart).toUtf8());
-        heartCount[i]++;
-        qDebug()<<heartCount[i];
-        if (heartCount[i] > 3)
-            ClientDisConnect(id[i].toInt(),ip[i],port[i].toInt());
     }
 }
 

@@ -5,17 +5,17 @@
 #include <QTcpServer>
 #include <tcpclient.h>
 #include <QMessageBox>
+#include <QTimer>
 class tcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
     explicit tcpServer(QObject *parent = 0);
     
-
-
-public:
-    QList<tcpClient *> ClientList;
+private:
     QList<int> ClientID;
+    QList<int> ClientHeart;
+    QList<tcpClient *> ClientList;
     tcpClient *CurrentClient;
 
     int clientCount;
@@ -26,6 +26,7 @@ public slots:
 
     int ClientCount()const{return clientCount;}
     void CloseAllClient();
+    void clearHeart(int temp);
 
 protected:
     void incomingConnection(int handle);
@@ -38,6 +39,7 @@ signals:
 
 private slots:
     void DisConnect(int clientID,QString IP,int Port);
+    void heartBeat();
     
 };
 

@@ -32,9 +32,13 @@ struct openFileStruct
 
 struct clientInfo   //客户端信息
 {
-    QString ip;     //ip
-    int state;      //状态
-    QString id;     //id
+    QString id;
+    QString ip;
+    QString No;
+    QString Mac;
+    QString port;
+    QString time;
+    int state;
 };
 
 const quint8 sendtype_file = 0;    //发送类型是文件

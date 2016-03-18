@@ -18,6 +18,7 @@
 #include <QStyleFactory>
 #include <QInputDialog>
 #include <QDebug>
+#include <my_define.h>
 class tcpClient : public QTcpSocket
 {
     Q_OBJECT
@@ -26,6 +27,7 @@ public:
     
 private:
     int clientID;
+    clientInfo Info;
 
 signals:
     void ClientReadData(int clientID,QString IP,int Port,QByteArray data);
