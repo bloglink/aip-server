@@ -33,15 +33,19 @@ void tcpServer::incomingConnection(int handle)
             this,SIGNAL(ClientReadData(int,QString,int,QByteArray)));
     connect(client,SIGNAL(ClientDisConnect(int,QString,int)),
             this,SLOT(DisConnect(int,QString,int)));
+    connect(client,SIGNAL(updateShow()),this,SIGNAL(updateShow()));
 
     emit ClientConnect(handle, client->peerAddress().toString(),client->peerPort());
 
     ClientList.append(client);
     ClientID.append(handle);
-    ClientHeart.append(0);
     clientCount++;
 
     CurrentClient = client;
+    client->Info.Time = QTime::currentTime().toString();
+    QByteArray data;
+    data[0] = type_ip;
+    client->write(data);
 }
 /******************************************************************************
   * version:    1.0
@@ -73,9 +77,12 @@ void tcpServer::DisConnect(int clientID,QString IP,int Port)
 ******************************************************************************/
 void tcpServer::SendData(int clientID, QByteArray data)
 {
+    QByteArray msg;
+    msg[0] = quint8(sendtype_msg);
+    msg.append(data);
     for (int i=0;i<clientCount;i++) {
         if (ClientID[i] == clientID) {
-            ClientList[i]->write(data);
+            ClientList[i]->write(msg);
             break;
         }
     }
@@ -90,7 +97,11 @@ void tcpServer::SendDataCurrent(QByteArray data)
 {
     if (clientCount<1)
         return;
-    CurrentClient->write(data);
+    QByteArray msg;
+    msg[0] = quint8(sendtype_msg);
+    msg.append(data);
+
+    CurrentClient->write(msg);
 }
 /******************************************************************************
   * version:    1.0
@@ -101,8 +112,30 @@ void tcpServer::SendDataCurrent(QByteArray data)
 void tcpServer::SendDataAll(QByteArray data)
 {
     int i;
+    QByteArray msg;
+    msg[0] = quint8(sendtype_msg);
+    msg.append(data);
     for (i=0; i<clientCount; i++)
-        ClientList[i]->write(data);
+        ClientList[i]->write(msg);
+}
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.18
+  * brief:      对所有连接发送心跳包
+******************************************************************************/
+void tcpServer::SendHeartBeat(int clientID)
+{
+    int i;
+    QByteArray msg;
+    msg[0] = quint8(type_heart);
+
+    for (i=0;i<clientCount;i++) {
+        if (ClientID[i] == clientID) {
+            ClientList[i]->write(msg);
+            break;
+        }
+    }
 }
 /******************************************************************************
   * version:    1.0
@@ -127,18 +160,18 @@ void tcpServer::CloseAllClient()
 void tcpServer::heartBeat()
 {
     int i;
-    int heart = 0xfe;
     int port;
     QString ip;
+
     for (i=0; i<clientCount; i++) {
-        if (ClientHeart[i] != 0)
-            SendData(ClientID[i],QString::number(heart).toUtf8());
-        ClientHeart[i]++;
-        if (ClientHeart[i] > 3) {
+        if (ClientList[i]->clientHeart > 5) {
             port = ClientList[i]->peerPort();
             ip = ClientList[i]->peerAddress().toString();
             ClientList[i]->disconnectFromHost();
         }
+        if (ClientList[i]->clientHeart == 0)
+            SendHeartBeat(ClientID[i]);
+        ClientList[i]->clientHeart++;
     }
 }
 /******************************************************************************
@@ -152,7 +185,7 @@ void tcpServer::clearHeart(int temp)
     int i;
     for (i=0; i<clientCount; i++) {
         if (ClientID[i] == temp)
-            ClientHeart[i] = 0;
+            ClientList[i]->clientHeart = 0;
     }
-
 }
+

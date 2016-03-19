@@ -39,8 +39,12 @@ private slots:
 public:
     QStringList id;
     QStringList ip;
+    QStringList No;
+    QStringList Mac;
     QStringList port;
     QStringList time;
+    QStringList version;
+
     QStringList status;
 
 

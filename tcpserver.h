@@ -6,13 +6,14 @@
 #include <tcpclient.h>
 #include <QMessageBox>
 #include <QTimer>
+#include <QDataStream>
 class tcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
     explicit tcpServer(QObject *parent = 0);
     
-private:
+public:
     QList<int> ClientID;
     QList<int> ClientHeart;
     QList<tcpClient *> ClientList;
@@ -23,6 +24,7 @@ public slots:
     void SendData(int clientID, QByteArray data);
     void SendDataCurrent(QByteArray data);
     void SendDataAll(QByteArray data);
+    void SendHeartBeat(int clientID);
 
     int ClientCount()const{return clientCount;}
     void CloseAllClient();
@@ -36,6 +38,7 @@ signals:
     void ClientReadData(int clientID,QString IP,int Port,QByteArray data);
     void ClientConnect(int clientID,QString IP,int Port);
     void ClientDisConnect(int clientID,QString IP,int Port);
+    void updateShow();
 
 private slots:
     void DisConnect(int clientID,QString IP,int Port);

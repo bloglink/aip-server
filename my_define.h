@@ -32,18 +32,30 @@ struct openFileStruct
 
 struct clientInfo   //客户端信息
 {
-    QString id;
-    QString ip;
+    QString Id;
+    QString Ip;
     QString No;
     QString Mac;
-    QString port;
-    QString time;
+    QString Port;
+    QString Time;
+    QString Version;
     int state;
 };
 
 const quint8 sendtype_file = 0;    //发送类型是文件
 const quint8 sendtype_start_test = 10;    //发送类型是开始测试
 const quint8 sendtype_msg = 20;    //发送类型是消息
+const quint8 sendtype_heart = 30;
+
+const quint8 type_ip       = 51;
+const quint8 type_No       = 52;
+const quint8 type_mac      = 53;
+const quint8 type_version  = 57;
+const quint8 type_test     = 54;
+const quint8 type_heart    = 55;
+const quint8 type_state    = 56;
+
+
 
 const quint16 filetype_list = 0;    //文件类型为列表
 const quint16 filetype_wavfile = 1;    //文件类型为wav文件
