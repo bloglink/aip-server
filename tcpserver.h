@@ -15,7 +15,6 @@ public:
     
 public:
     QList<int> ClientID;
-    QList<int> ClientHeart;
     QList<tcpClient *> ClientList;
     tcpClient *CurrentClient;
 
@@ -24,24 +23,21 @@ public slots:
     void SendData(int clientID, QByteArray data);
     void SendDataCurrent(QByteArray data);
     void SendDataAll(QByteArray data);
-    void SendHeartBeat(int clientID);
 
     int ClientCount()const{return clientCount;}
     void CloseAllClient();
-    void clearHeart(int temp);
 
 protected:
     void incomingConnection(int handle);
 
 signals:
-    void error(QTcpSocket::SocketError socketError);
-    void ClientReadData(int clientID,QString IP,int Port,QByteArray data);
-    void ClientConnect(int clientID,QString IP,int Port);
-    void ClientDisConnect(int clientID,QString IP,int Port);
     void updateShow();
+    void newRecord(QString No,int state);
+    void shareData(QByteArray data);
+    void error(QTcpSocket::SocketError socketError);
 
 private slots:
-    void DisConnect(int clientID,QString IP,int Port);
+    void DisConnect(int clientID);
     void heartBeat();
     
 };

@@ -64,5 +64,28 @@ bool LINUX_SQL::close_connection()
     return true;
 }
 /******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2015.11.21
+  * brief:      判断表是否存在
+******************************************************************************/
+bool LINUX_SQL::isExist(QVariant sql)
+{
+    QSqlQuery query(db);
+
+    query.prepare("select count(*) from sqlite_master where type='table' and name=:name");
+    query.bindValue(":name",sql.toString());
+    query.exec( );
+    if(query.next())
+    {
+        if(query.value(0).toInt() == 0)
+            return false;
+        else
+            return true;
+    }
+    return false;
+}
+
+/******************************************************************************
                                     END
 ******************************************************************************/

@@ -6,7 +6,10 @@
 #define KEYBOARD_X 660
 #define KEYBOARD_Y 240
 #define ICON 64
-#define DB_PATH "/mnt/nfs/aip.db"
+#define DB_PATH "/home/link/aip-server/aip.db"
+
+#define W_ROW 50
+#define W_COL 7
 
 #define W_MAIN  0x00
 #define W_HOME  0x00
@@ -39,6 +42,7 @@ struct clientInfo   //客户端信息
     QString Port;
     QString Time;
     QString Version;
+    int heart;
     int state;
 };
 
@@ -55,7 +59,10 @@ const quint8 type_test     = 54;
 const quint8 type_heart    = 55;
 const quint8 type_state    = 56;
 
-
+const quint8 state_upper   = 0;
+const quint8 state_lower   = 1;
+const quint8 state_error   = 2;
+const quint8 state_test    = 3;
 
 const quint16 filetype_list = 0;    //文件类型为列表
 const quint16 filetype_wavfile = 1;    //文件类型为wav文件

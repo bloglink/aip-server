@@ -28,11 +28,13 @@ public:
     
 private:
     int clientID;
+    bool isAdmin;
 
 signals:
-    void ClientReadData(int clientID,QString IP,int Port,QByteArray data);
-    void ClientDisConnect(int clientID,QString IP,int Port);
+    void shareData(QByteArray data);
     void updateShow();
+    void newRecord(QString No,int state);
+    void ClientDisConnect(int clientID);
 private slots:
     void ReadData();
     void DisConnect();

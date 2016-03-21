@@ -20,7 +20,6 @@
 #include <QtGui/QLineEdit>
 #include <QtGui/QPushButton>
 #include <QtGui/QTableWidget>
-#include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -28,7 +27,7 @@ QT_BEGIN_NAMESPACE
 class Ui_w_Home
 {
 public:
-    QVBoxLayout *verticalLayout;
+    QGridLayout *gridLayout_2;
     QGridLayout *gridLayout;
     QTableWidget *tableWidget;
     QHBoxLayout *horizontalLayout;
@@ -37,15 +36,18 @@ public:
     QLabel *label_3;
     QLineEdit *lineEditSend;
     QPushButton *pushButton;
+    QHBoxLayout *horizontalLayout_4;
     QPushButton *pushButtonStart;
+    QPushButton *pushButtonPrev;
+    QPushButton *pushButtonNext;
 
     void setupUi(QWidget *w_Home)
     {
         if (w_Home->objectName().isEmpty())
             w_Home->setObjectName(QString::fromUtf8("w_Home"));
         w_Home->resize(795, 597);
-        verticalLayout = new QVBoxLayout(w_Home);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        gridLayout_2 = new QGridLayout(w_Home);
+        gridLayout_2->setObjectName(QString::fromUtf8("gridLayout_2"));
         gridLayout = new QGridLayout();
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         tableWidget = new QTableWidget(w_Home);
@@ -57,9 +59,10 @@ public:
         gridLayout->addWidget(tableWidget, 0, 0, 1, 1);
 
 
-        verticalLayout->addLayout(gridLayout);
+        gridLayout_2->addLayout(gridLayout, 0, 0, 1, 1);
 
         horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setSpacing(20);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         label_2 = new QLabel(w_Home);
         label_2->setObjectName(QString::fromUtf8("label_2"));
@@ -87,12 +90,28 @@ public:
         horizontalLayout->addWidget(pushButton);
 
 
-        verticalLayout->addLayout(horizontalLayout);
+        gridLayout_2->addLayout(horizontalLayout, 1, 0, 1, 1);
 
+        horizontalLayout_4 = new QHBoxLayout();
+        horizontalLayout_4->setSpacing(20);
+        horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
         pushButtonStart = new QPushButton(w_Home);
         pushButtonStart->setObjectName(QString::fromUtf8("pushButtonStart"));
 
-        verticalLayout->addWidget(pushButtonStart);
+        horizontalLayout_4->addWidget(pushButtonStart);
+
+        pushButtonPrev = new QPushButton(w_Home);
+        pushButtonPrev->setObjectName(QString::fromUtf8("pushButtonPrev"));
+
+        horizontalLayout_4->addWidget(pushButtonPrev);
+
+        pushButtonNext = new QPushButton(w_Home);
+        pushButtonNext->setObjectName(QString::fromUtf8("pushButtonNext"));
+
+        horizontalLayout_4->addWidget(pushButtonNext);
+
+
+        gridLayout_2->addLayout(horizontalLayout_4, 2, 0, 1, 1);
 
 
         retranslateUi(w_Home);
@@ -107,6 +126,8 @@ public:
         label_3->setText(QApplication::translate("w_Home", "\345\217\221\351\200\201\346\225\260\346\215\256", 0, QApplication::UnicodeUTF8));
         pushButton->setText(QApplication::translate("w_Home", "\345\217\221\351\200\201", 0, QApplication::UnicodeUTF8));
         pushButtonStart->setText(QApplication::translate("w_Home", "\345\274\200\345\247\213\347\233\221\345\220\254", 0, QApplication::UnicodeUTF8));
+        pushButtonPrev->setText(QApplication::translate("w_Home", "\344\270\212\344\270\200\351\241\265", 0, QApplication::UnicodeUTF8));
+        pushButtonNext->setText(QApplication::translate("w_Home", "\344\270\213\344\270\200\351\241\265", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

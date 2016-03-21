@@ -22,6 +22,7 @@ public slots:
     int selectMax(QVariant table);
     bool createConnetion(QVariant sql);
     bool close_connection();
+    bool isExist(QVariant sql);
 };
 
 #endif // LINUX_SQL_H

@@ -5,6 +5,9 @@
 #include <tcpclient.h>
 #include <tcpserver.h>
 #include <QByteArray>
+#include <QTableWidgetItem>
+
+#include <linux_sql.h>
 
 namespace Ui {
 class w_Home;
@@ -23,29 +26,23 @@ private:
     Ui::w_Home *ui;
 
 private:
+    int page;
+
+    LINUX_SQL sql;
+
     bool isServerOn;
     tcpServer *server;
 
-private slots:
-    void ClientReadData(int clientID,QString IP,int Port,QByteArray data);
-    void ClientConnect(int clientID,QString IP,int Port);
-    void ClientDisConnect(int clientID,QString IP,int Port);
-    void updateShow();
+    QList<QTableWidgetItem *> pItem;
 
+private slots:
+    void updateShow();
+    void newRecord(QString No,int state);
+    void updateData(QByteArray data);
 
     void on_pushButton_clicked();
 
     void on_pushButtonStart_clicked();
-public:
-    QStringList id;
-    QStringList ip;
-    QStringList No;
-    QStringList Mac;
-    QStringList port;
-    QStringList time;
-    QStringList version;
-
-    QStringList status;
 
 
 };

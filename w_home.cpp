@@ -5,170 +5,91 @@ w_Home::w_Home(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::w_Home)
 {
+    int i;
     ui->setupUi(this);
 
     isServerOn = false;
+    page = 0;
 
     QStringList str;
     str.append(tr("ID"));
     str.append(tr("IP"));
+    str.append(tr("出厂编号"));
+    str.append(tr("MAC地址"));
     str.append(tr("端口号"));
     str.append(tr("时间"));
     str.append(tr("软件版本"));
-    str.append(tr("出厂编号"));
-    str.append(tr("MAC地址"));
 
     ui->tableWidget->setColumnCount(str.size());
     ui->tableWidget->setHorizontalHeaderLabels(str);
     ui->tableWidget->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    ui->tableWidget->setRowCount(W_ROW);
+
+    for (i=0; i<W_ROW*W_COL; i++) {
+        pItem.append(new QTableWidgetItem);
+        pItem[i]->setTextAlignment(Qt::AlignCenter);
+        ui->tableWidget->setItem(i/W_COL,i%W_COL,pItem[i]);
+    }
+
+    sql.createConnetion(DB_PATH);
 
     server = new tcpServer(this);
 
-    connect(server,SIGNAL(ClientConnect(int,QString,int)),
-            this,SLOT(ClientConnect(int,QString,int)));
-    connect(server,SIGNAL(ClientDisConnect(int,QString,int)),
-            this,SLOT(ClientDisConnect(int,QString,int)));
-    connect(server,SIGNAL(ClientReadData(int,QString,int,QByteArray)),
-            this,SLOT(ClientReadData(int,QString,int,QByteArray)));
+    connect(server,SIGNAL(shareData(QByteArray)),
+            this,SLOT(updateData(QByteArray)));
     connect(server,SIGNAL(updateShow()),this,SLOT(updateShow()));
+    connect(server,SIGNAL(newRecord(QString,int)),
+            this,SLOT(newRecord(QString,int)));
 }
 
 w_Home::~w_Home()
 {
+    sql.close_connection();
     delete ui;
 }
-
-void w_Home::ClientReadData(int clientID,QString IP,int Port,QByteArray data)
+void w_Home::updateData(QByteArray data)
 {
-    QString str;
-    server->clearHeart(clientID);
-
-    if (!data.isEmpty()){
-        str.append(QString::number(clientID));
-        str.append(IP);
-        str.append(QString::number(Port));
-        str.append(data);
-        ui->lineEditData->setText(data);
-    }
+    ui->lineEditData->setText(data);
 }
 
-void w_Home::ClientConnect(int clientID,QString IP,int Port)
-{
-//    int i;
-//    for (i=0; i<ip.size(); i++) {
-//        if (ip[i] == IP)
-//            break;
-//    }
-//    if (i == ip.size()) {
-//        id.append(QString::number(clientID));
-//        ip.append(IP);
-//        port.append(QString::number(Port));
-//        time.append(QTime::currentTime().toString());
-//        status.append(tr("上线"));
-//    } else {
-//        id[i] = QString::number(clientID);
-//        port[i] = QString::number(Port);
-//        time[i] = QTime::currentTime().toString();
-//        status[i] = tr("上线");
-//    }
-
-//    updateShow();
-}
-
-void w_Home::ClientDisConnect(int,QString IP,int)
-{
-    int i;
-    for (i=0; i<ip.size(); i++) {
-        if (ip[i] == IP) {
-            id.removeAt(i);
-            ip.removeAt(i);
-            port.removeAt(i);
-            time.removeAt(i);
-            status.removeAt(i);
-            break;
-        }
-    }
-    updateShow();
-}
 void w_Home::updateShow()
 {
     int i;
+    int row = server->ClientCount();
+    if (row > W_ROW)
+        row = W_ROW;
 
-    id.clear();
-    ip.clear();
-    No.clear();
-    Mac.clear();
-    port.clear();
-    time.clear();
-    version.clear();
-    for (i=0; i<server->ClientCount(); i++) {
-        id.append(server->ClientList[i]->Info.Id);
-        ip.append(server->ClientList[i]->Info.Ip);
-        No.append(server->ClientList[i]->Info.No);
-        Mac.append(server->ClientList[i]->Info.Mac);
-        port.append(server->ClientList[i]->Info.Port);
-        time.append(server->ClientList[i]->Info.Time);
-        version.append(server->ClientList[i]->Info.Version);
-    }
+    for(i=0; i<W_ROW*W_COL; i++)
+        pItem[i]->setText("");
 
-    ui->tableWidget->setRowCount(ip.size());
-
-    for(i=0; i<id.size(); i++)
-    {
-        QTableWidgetItem *pItem = new QTableWidgetItem(id[i]);
-        pItem->setTextAlignment(Qt::AlignCenter);
-        ui->tableWidget->setItem(i,0,pItem);
-    }
-    for(i=0; i<ip.size(); i++)
-    {
-        QTableWidgetItem *pItem = new QTableWidgetItem(ip[i]);
-        pItem->setTextAlignment(Qt::AlignCenter);
-        ui->tableWidget->setItem(i,1,pItem);
-    }
-    for(i=0; i<port.size(); i++)
-    {
-        QTableWidgetItem *pItem = new QTableWidgetItem(port[i]);
-        pItem->setTextAlignment(Qt::AlignCenter);
-        ui->tableWidget->setItem(i,2,pItem);
-    }
-
-    for(i=0; i<time.size(); i++)
-    {
-        QTableWidgetItem *pItem = new QTableWidgetItem(time[i]);
-        pItem->setTextAlignment(Qt::AlignCenter);
-        ui->tableWidget->setItem(i,3,pItem);
-    }
-    for(i=0; i<version.size(); i++)
-    {
-        QTableWidgetItem *pItem = new QTableWidgetItem(version[i]);
-        pItem->setTextAlignment(Qt::AlignCenter);
-        ui->tableWidget->setItem(i,4,pItem);
-    }
-    for(i=0; i<No.size(); i++)
-    {
-        QTableWidgetItem *pItem = new QTableWidgetItem(No[i]);
-        pItem->setTextAlignment(Qt::AlignCenter);
-        ui->tableWidget->setItem(i,5,pItem);
-    }
-    for(i=0; i<Mac.size(); i++)
-    {
-        QTableWidgetItem *pItem = new QTableWidgetItem(Mac[i]);
-        pItem->setTextAlignment(Qt::AlignCenter);
-        ui->tableWidget->setItem(i,6,pItem);
+    for (i=0; i<row; i++) {
+        pItem[i+0]->setText(server->ClientList[i+page*W_ROW]->Info.Id);
+        pItem[i+1]->setText(server->ClientList[i+page*W_ROW]->Info.Ip);
+        pItem[i+2]->setText(server->ClientList[i+page*W_ROW]->Info.No);
+        pItem[i+3]->setText(server->ClientList[i+page*W_ROW]->Info.Mac);
+        pItem[i+4]->setText(server->ClientList[i+page*W_ROW]->Info.Port);
+        pItem[i+5]->setText(server->ClientList[i+page*W_ROW]->Info.Time);
+        pItem[i+6]->setText(server->ClientList[i+page*W_ROW]->Info.Version);
     }
 }
 
 void w_Home::on_pushButton_clicked()
 {
+    QByteArray data;
+
+    data[0] = sendtype_msg;
+    data.append(ui->lineEditSend->text().toUtf8());
+
     int ret = ui->tableWidget->currentRow();
+    int clientID = server->ClientList[ret+page*W_ROW]->Info.Id.toInt();
 
     if (ui->lineEditSend->text().isEmpty())
         return;
 
     if (ret < 0)
-        server->SendDataCurrent(ui->lineEditSend->text().toUtf8());
+        server->SendDataCurrent(data);
     else
-        server->SendData(id[ret].toInt(),ui->lineEditSend->text().toUtf8());
+        server->SendData(clientID, data);
 }
 
 void w_Home::on_pushButtonStart_clicked()
@@ -182,5 +103,26 @@ void w_Home::on_pushButtonStart_clicked()
         ui->pushButtonStart->setText(tr("开始监听"));
         server->CloseAllClient();
         server->close();
+    }
+}
+void w_Home::newRecord(QString No,int state)
+{
+    switch (state) {
+    case state_upper:
+        if (sql.isExist(No))
+            qDebug()<<sql.selectMax(No);
+        qDebug()<<"上线";
+        break;
+    case state_lower:
+        qDebug()<<"下线";
+        break;
+    case state_error:
+        qDebug()<<"错误";
+        break;
+    case state_test:
+        qDebug()<<"测试";
+        break;
+    default:
+        break;
     }
 }
