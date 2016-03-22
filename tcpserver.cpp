@@ -48,6 +48,8 @@ void tcpServer::incomingConnection(int handle)
 
     emit updateShow();
 
+    qDebug()<<client->peerAddress().toString();
+
     QByteArray data;
     data[0] = type_ip;
     client->write(data);

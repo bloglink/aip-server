@@ -54,15 +54,16 @@ const quint8 sendtype_heart = 30;
 const quint8 type_ip       = 51;
 const quint8 type_No       = 52;
 const quint8 type_mac      = 53;
-const quint8 type_version  = 57;
 const quint8 type_test     = 54;
 const quint8 type_heart    = 55;
 const quint8 type_state    = 56;
+const quint8 type_version  = 57;
 
 const quint8 state_upper   = 0;
 const quint8 state_lower   = 1;
 const quint8 state_error   = 2;
 const quint8 state_test    = 3;
+const quint8 state_config  = 4;
 
 const quint16 filetype_list = 0;    //文件类型为列表
 const quint16 filetype_wavfile = 1;    //文件类型为wav文件

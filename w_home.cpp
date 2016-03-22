@@ -47,11 +47,22 @@ w_Home::~w_Home()
     sql.close_connection();
     delete ui;
 }
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
+  * brief:      显示数据
+******************************************************************************/
 void w_Home::updateData(QByteArray data)
 {
     ui->lineEditData->setText(data);
 }
-
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
+  * brief:      更新显示
+******************************************************************************/
 void w_Home::updateShow()
 {
     int i;
@@ -63,16 +74,21 @@ void w_Home::updateShow()
         pItem[i]->setText("");
 
     for (i=0; i<row; i++) {
-        pItem[i+0]->setText(server->ClientList[i+page*W_ROW]->Info.Id);
-        pItem[i+1]->setText(server->ClientList[i+page*W_ROW]->Info.Ip);
-        pItem[i+2]->setText(server->ClientList[i+page*W_ROW]->Info.No);
-        pItem[i+3]->setText(server->ClientList[i+page*W_ROW]->Info.Mac);
-        pItem[i+4]->setText(server->ClientList[i+page*W_ROW]->Info.Port);
-        pItem[i+5]->setText(server->ClientList[i+page*W_ROW]->Info.Time);
-        pItem[i+6]->setText(server->ClientList[i+page*W_ROW]->Info.Version);
+        pItem[i*W_COL+0]->setText(server->ClientList[i+page*W_ROW]->Info.Id);
+        pItem[i*W_COL+1]->setText(server->ClientList[i+page*W_ROW]->Info.Ip);
+        pItem[i*W_COL+2]->setText(server->ClientList[i+page*W_ROW]->Info.No);
+        pItem[i*W_COL+3]->setText(server->ClientList[i+page*W_ROW]->Info.Mac);
+        pItem[i*W_COL+4]->setText(server->ClientList[i+page*W_ROW]->Info.Port);
+        pItem[i*W_COL+5]->setText(server->ClientList[i+page*W_ROW]->Info.Time);
+        pItem[i*W_COL+6]->setText(server->ClientList[i+page*W_ROW]->Info.Version);
     }
 }
-
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
+  * brief:      发送数据
+******************************************************************************/
 void w_Home::on_pushButton_clicked()
 {
     QByteArray data;
@@ -91,7 +107,12 @@ void w_Home::on_pushButton_clicked()
     else
         server->SendData(clientID, data);
 }
-
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
+  * brief:      开始监听
+******************************************************************************/
 void w_Home::on_pushButtonStart_clicked()
 {
     if (!isServerOn) {
@@ -105,24 +126,100 @@ void w_Home::on_pushButtonStart_clicked()
         server->close();
     }
 }
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
+  * brief:      新记录
+******************************************************************************/
 void w_Home::newRecord(QString No,int state)
 {
+    int i;
+
+    createTable(No);
+
     switch (state) {
     case state_upper:
-        if (sql.isExist(No))
-            qDebug()<<sql.selectMax(No);
+        for (i=0; i<server->ClientCount(); i++) {
+            if (server->ClientList[i]->Info.No == No)
+                insertRow(No,i,"上线");
+        }
         qDebug()<<"上线";
         break;
     case state_lower:
+        for (i=0; i<server->ClientCount(); i++) {
+            if (server->ClientList[i]->Info.No == No)
+                insertRow(No,i,"下线");
+        }
         qDebug()<<"下线";
         break;
     case state_error:
+        for (i=0; i<server->ClientCount(); i++) {
+            if (server->ClientList[i]->Info.No == No)
+                insertRow(No,i,"错误");
+        }
         qDebug()<<"错误";
         break;
     case state_test:
+        for (i=0; i<server->ClientCount(); i++) {
+            if (server->ClientList[i]->Info.No == No)
+                insertRow(No,i,"测试");
+        }
         qDebug()<<"测试";
+        break;
+    case state_config:
+        for (i=0; i<server->ClientCount(); i++) {
+            if (server->ClientList[i]->Info.No == No)
+                insertRow(No,i,"更改");
+        }
+        qDebug()<<"更改配置";
         break;
     default:
         break;
     }
+}
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
+  * brief:      创建新表格
+******************************************************************************/
+void w_Home::createTable(QString No)
+{
+    if (sql.isExist(No))
+        return;
+    QString str = "create table :table (ID int primary key,IP varchar(20),NO varchar(20),MAC varchar(20),PORT varchar(20),TIME varchar(20),STATE varchar(20))";
+    //    str += "IP varchar(20),";
+    //    str += "NO varchar(20),";
+    //    str += "MAC varchar(20),";
+    //    str += "PORT varchar(20),";
+    //    str += "TIME varchar(20),";
+    //    str += "STATE varchar(20))";
+    str.replace(":table",No);
+
+    QSqlQuery query(sql.db);
+    query.prepare(str);
+    bool ok = query.exec();
+    qDebug()<<ok;
+}
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
+  * brief:      插入一条记录
+******************************************************************************/
+void w_Home::insertRow(QString No ,int row, QString state)
+{
+    QString str = "insert into :table (ID,IP,NO,MAC,PORT,TIME,STATE)""values(:ID,:IP,:NO,:MAC,:PORT,:TIME,:STATE)";
+    str.replace(":table",No);
+    QSqlQuery query(sql.db);
+    query.prepare(str);
+    query.bindValue(":ID",sql.selectMax(No)+1);
+    query.bindValue(":IP",server->ClientList[row]->Info.Ip);
+    query.bindValue(":NO",server->ClientList[row]->Info.No);
+    query.bindValue(":MAC",server->ClientList[row]->Info.Mac);
+    query.bindValue(":PORT",server->ClientList[row]->Info.Port);
+    query.bindValue(":TIME",QTime::currentTime().toString());
+    query.bindValue(":STATE",state);
+    query.exec();
 }

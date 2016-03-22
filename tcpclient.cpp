@@ -10,6 +10,12 @@ tcpClient::tcpClient(QObject *parent,int clientID) :
     connect(this,SIGNAL(disconnected()),this,SLOT(DisConnect()));
     connect(this,SIGNAL(disconnected()),this,SLOT(deleteLater()));
 }
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
+  * brief:      读取数据
+******************************************************************************/
 void tcpClient::ReadData()
 {
     this->clientHeart = 0;
@@ -66,6 +72,12 @@ void tcpClient::ReadData()
     if (isAdmin == false)
         return;
 }
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
+  * brief:      断开连接
+******************************************************************************/
 void tcpClient::DisConnect()
 {
     emit newRecord(Info.No, state_lower);

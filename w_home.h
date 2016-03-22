@@ -39,6 +39,8 @@ private slots:
     void updateShow();
     void newRecord(QString No,int state);
     void updateData(QByteArray data);
+    void createTable(QString No);
+    void insertRow(QString No, int row, QString state);
 
     void on_pushButton_clicked();
 
