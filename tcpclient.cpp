@@ -1,3 +1,12 @@
+/*******************************************************************************
+ * Copyright (c) 2016,青岛艾普智能仪器有限公司
+ * All rights reserved.
+ *
+ * version:     1.0
+ * author:      link
+ * date:        2016.03.22
+ * brief:       客户端
+*******************************************************************************/
 #include "tcpclient.h"
 
 tcpClient::tcpClient(QObject *parent) :
@@ -49,7 +58,5 @@ void tcpClient::ReadData()
 ******************************************************************************/
 void tcpClient::DisConnect()
 {
-    Info.isFree = true;
-    Info.isInit = false;
     emit ClientDisConnect(Info.ID.toInt());
 }

@@ -2,14 +2,13 @@
 #define LINUX_SQL_H
 
 #include <QWidget>
-///////////////////////////////////////////////////////////////////////////////
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QVariant>
-#include <QDebug>
-#include <QSqlError>
 #include <QFile>
-///////////////////////////////////////////////////////////////////////////////
+#include <QDebug>
+#include <QVariant>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QSqlDatabase>
+
 class LINUX_SQL : public QWidget
 {
     Q_OBJECT
@@ -19,10 +18,10 @@ public:
 public:
     QSqlDatabase db;
 public slots:
-    int selectMax(QVariant table);
-    bool createConnetion(QVariant sql);
-    bool close_connection();
-    bool isExist(QVariant sql);
+    int MaxID(QVariant table);
+    bool ConnectToSql(QVariant sql);
+    bool DisConnect();
+    bool IsExist(QVariant sql);
 };
 
 #endif // LINUX_SQL_H

@@ -1,3 +1,12 @@
+/*******************************************************************************
+ * Copyright (c) 2016,青岛艾普智能仪器有限公司
+ * All rights reserved.
+ *
+ * version:     1.0
+ * author:      link
+ * date:        2015.11.21
+ * brief:       数据库操作
+*******************************************************************************/
 #include "linux_sql.h"
 
 LINUX_SQL::LINUX_SQL(QWidget *parent) :
@@ -10,7 +19,7 @@ LINUX_SQL::LINUX_SQL(QWidget *parent) :
   * date:       2015.11.21
   * brief:      获取最大ID
 ******************************************************************************/
-int LINUX_SQL::selectMax(QVariant table)
+int LINUX_SQL::MaxID(QVariant table)
 {
     int max = 0;
     QSqlQuery query(db);
@@ -30,7 +39,7 @@ int LINUX_SQL::selectMax(QVariant table)
   * date:       2015.11.21
   * brief:      打开数据库
 ******************************************************************************/
-bool LINUX_SQL::createConnetion(QVariant sql)
+bool LINUX_SQL::ConnectToSql(QVariant sql)
 {
     if(QSqlDatabase::contains("qt_sql_default_connection"))
         db = QSqlDatabase::database("qt_sql_default_connection");
@@ -58,7 +67,7 @@ bool LINUX_SQL::createConnetion(QVariant sql)
   * date:       2015.11.21
   * brief:      关闭数据库
 ******************************************************************************/
-bool LINUX_SQL::close_connection()
+bool LINUX_SQL::DisConnect()
 {
     db.close();
     return true;
@@ -69,7 +78,7 @@ bool LINUX_SQL::close_connection()
   * date:       2015.11.21
   * brief:      判断表是否存在
 ******************************************************************************/
-bool LINUX_SQL::isExist(QVariant sql)
+bool LINUX_SQL::IsExist(QVariant sql)
 {
     QSqlQuery query(db);
 

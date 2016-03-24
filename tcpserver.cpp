@@ -1,3 +1,12 @@
+/*******************************************************************************
+ * Copyright (c) 2016,青岛艾普智能仪器有限公司
+ * All rights reserved.
+ *
+ * version:     1.0
+ * author:      link
+ * date:        2016.03.18
+ * brief:       服务端
+*******************************************************************************/
 #include "tcpserver.h"
 /******************************************************************************
   * version:    1.0
@@ -48,6 +57,8 @@ void tcpServer::incomingConnection(int handle)
     ClientList.append(tcpPool[i]);
     ClientID.append(i);
     ClientCount++;
+
+    CurrentClient = tcpPool[i];
 
     emit ClientConnected(i);
 }

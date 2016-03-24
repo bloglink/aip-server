@@ -2,12 +2,12 @@
 #define W_HOME_H
 
 #include <QWidget>
-#include <tcpclient.h>
-#include <tcpserver.h>
+#include <QTimer>
 #include <QByteArray>
 #include <QTableWidgetItem>
 
-#include <linux_sql.h>
+#include "tcpserver.h"
+#include "linux_sql.h"
 
 namespace Ui {
 class w_Home;
@@ -21,7 +21,6 @@ public:
     explicit w_Home(QWidget *parent = 0);
     ~w_Home();
     
-
 private:
     Ui::w_Home *ui;
 
@@ -47,10 +46,7 @@ private slots:
     void insertRow(QString No, int row, QString state);
 
     void on_pushButton_clicked();
-
     void on_pushButtonStart_clicked();
-
-
     void on_pushButtonPrev_clicked();
     void on_pushButtonNext_clicked();
 };

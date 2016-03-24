@@ -1,6 +1,20 @@
+/*******************************************************************************
+ * Copyright (c) 2016,青岛艾普智能仪器有限公司
+ * All rights reserved.
+ *
+ * version:     1.0
+ * author:      link
+ * date:        2016.03.22
+ * brief:       主界面
+*******************************************************************************/
 #include "w_home.h"
 #include "ui_w_home.h"
-
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.24
+  * brief:      构造函数
+******************************************************************************/
 w_Home::w_Home(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::w_Home)
@@ -35,10 +49,15 @@ w_Home::w_Home(QWidget *parent) :
     connect (timer,SIGNAL(timeout()),this,SLOT(system()));
     timer->start(50);
 }
-
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.24
+  * brief:      退出
+******************************************************************************/
 w_Home::~w_Home()
 {
-    sql.close_connection();
+    sql.DisConnect();
     delete ui;
 }
 /******************************************************************************
@@ -51,7 +70,7 @@ void w_Home::system()
 {
     switch (sysStep) {
     case 0:
-        sql.createConnetion(DB_PATH);
+        sql.ConnectToSql(DB_PATH);
         break;
     case 1:
         server = new tcpServer(this);
@@ -106,8 +125,6 @@ void w_Home::ClientConnected(int index)
     msg[0] = type_msg;
     msg.append(QString::number(type_version));
     server->SendData(index,msg);
-
-    updateShow();
 }
 /******************************************************************************
   * version:    1.0
@@ -117,8 +134,12 @@ void w_Home::ClientConnected(int index)
 ******************************************************************************/
 void w_Home::ClientDisconnect(int index)
 {
-    newRecord(index, state_lower);
-    updateShow();
+    if (server->tcpPool[index]->Info.isInit) {
+        newRecord(index, state_lower);
+        updateShow();
+        server->tcpPool[index]->Info.isInit = false;
+        server->tcpPool[index]->Info.isFree = true;
+    }
 }
 
 /******************************************************************************
@@ -243,12 +264,20 @@ void w_Home::newRecord(int index,int state)
 
     switch (state) {
     case state_upper:
-        insertRow(server->tcpPool[index]->Info.NO,index,"上线");
-        qDebug()<<"上线";
+        if (server->tcpPool[index]->Info.isInit == false) {
+            insertRow(server->tcpPool[index]->Info.NO,index,"上线");
+            server->tcpPool[index]->Info.isInit = true;
+            qDebug()<<"上线";
+        }
         break;
     case state_lower:
-        insertRow(server->tcpPool[index]->Info.NO,index,"下线");
-        qDebug()<<"下线";
+        if (server->tcpPool[index]->Info.isInit) {
+            server->tcpPool[index]->Info.isInit = false;
+            server->tcpPool[index]->Info.isFree = true;
+            insertRow(server->tcpPool[index]->Info.NO,index,"下线");
+            updateShow();
+            qDebug()<<"下线";
+        }
         break;
     case state_error:
         insertRow(server->tcpPool[index]->Info.NO,index,"错误");
@@ -275,7 +304,7 @@ void w_Home::newRecord(int index,int state)
 ******************************************************************************/
 void w_Home::createTable(QString No)
 {
-    if (sql.isExist(No))
+    if (sql.IsExist(No))
         return;
     QString str = "create table :table (ID int primary key,";
     str += "IP varchar(20),";
@@ -288,8 +317,7 @@ void w_Home::createTable(QString No)
 
     QSqlQuery query(sql.db);
     query.prepare(str);
-    bool ok = query.exec();
-    qDebug()<<ok;
+    query.exec();
 }
 /******************************************************************************
   * version:    1.0
@@ -304,7 +332,7 @@ void w_Home::insertRow(QString No ,int index, QString state)
     str.replace(":table",No);
     QSqlQuery query(sql.db);
     query.prepare(str);
-    query.bindValue(":ID",sql.selectMax(No)+1);
+    query.bindValue(":ID",sql.MaxID(No)+1);
     query.bindValue(":IP",server->tcpPool[index]->Info.IP);
     query.bindValue(":NO",server->tcpPool[index]->Info.NO);
     query.bindValue(":MAC",server->tcpPool[index]->Info.MAC);
