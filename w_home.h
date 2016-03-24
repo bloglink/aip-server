@@ -27,6 +27,7 @@ private:
 
 private:
     int page;
+    int sysStep;
 
     LINUX_SQL sql;
 
@@ -36,9 +37,12 @@ private:
     QList<QTableWidgetItem *> pItem;
 
 private slots:
+    void system();
     void updateShow();
-    void newRecord(QString No,int state);
-    void updateData(QByteArray data);
+    void ClientConnected(int index);
+    void ClientDisconnect(int index);
+    void ClientRcvData(int index, QByteArray data);
+    void newRecord(int index,int state);
     void createTable(QString No);
     void insertRow(QString No, int row, QString state);
 
@@ -47,6 +51,8 @@ private slots:
     void on_pushButtonStart_clicked();
 
 
+    void on_pushButtonPrev_clicked();
+    void on_pushButtonNext_clicked();
 };
 
 #endif // W_HOME_H

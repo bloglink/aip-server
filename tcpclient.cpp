@@ -1,14 +1,11 @@
 #include "tcpclient.h"
 
-tcpClient::tcpClient(QObject *parent,int clientID) :
+tcpClient::tcpClient(QObject *parent) :
     QTcpSocket(parent)
 {
-    this->clientID = clientID;
-    isAdmin = false;
-
+    blockSize = 0;
     connect(this,SIGNAL(readyRead()),this,SLOT(ReadData()));
     connect(this,SIGNAL(disconnected()),this,SLOT(DisConnect()));
-    connect(this,SIGNAL(disconnected()),this,SLOT(deleteLater()));
 }
 /******************************************************************************
   * version:    1.0
@@ -18,59 +15,31 @@ tcpClient::tcpClient(QObject *parent,int clientID) :
 ******************************************************************************/
 void tcpClient::ReadData()
 {
-    this->clientHeart = 0;
 
-    QByteArray data = this->readAll();
+    QByteArray data;
+    QDataStream in(this);
+    in.setVersion(QDataStream::Qt_4_8);
 
-    quint8 fun = quint8(data[0]);
-    QByteArray tt;
+    while (1) {
+        if (blockSize == 0) {
+            if (this->bytesAvailable() < sizeof(quint16))
+                return;
+        }
+        in >> blockSize;
+        if (this->bytesAvailable() < blockSize)
+            return;
 
-    switch (fun) {
-    case sendtype_heart:
-        break;
-    case sendtype_msg:
-        data.remove(0,1);
-        emit shareData(data);
-        break;
-    case type_ip:
-        data.remove(0,1);
-        Info.Ip = data;
-        tt[0] = type_No;
-        this->write(tt);
-        break;
-    case type_No:
-        data.remove(0,1);
-        Info.No = data;
-        tt[0] = type_mac;
-        this->write(tt);
-        break;
-    case type_mac:
-        data.remove(0,1);
-        Info.Mac = data;
-        tt[0] = type_version;
-        this->write(tt);
-        break;
-    case type_version:
-        data.remove(0,1);
-        Info.Version = data;
-        emit newRecord(Info.No, state_upper);
-        emit updateShow();
+        in >> data;
 
-        break;
-    case type_test:
-        emit newRecord(Info.No, state_test);
-        break;
-    case type_heart:
-        break;
-    case type_state:
-        break;
+        quint8 fun = quint8(data[0]);
 
-    default:
-        break;
+        if (fun == type_heart)
+            Info.heart = 0;
+        else
+            emit RcvData(Info.ID.toInt(), data);
+
+        blockSize = 0;
     }
-
-    if (isAdmin == false)
-        return;
 }
 /******************************************************************************
   * version:    1.0
@@ -80,7 +49,7 @@ void tcpClient::ReadData()
 ******************************************************************************/
 void tcpClient::DisConnect()
 {
-    emit newRecord(Info.No, state_lower);
-    //断开连接时，发送断开信号
-    emit ClientDisConnect(this->clientID);
+    Info.isFree = true;
+    Info.isInit = false;
+    emit ClientDisConnect(Info.ID.toInt());
 }

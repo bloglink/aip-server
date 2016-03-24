@@ -24,26 +24,22 @@ class tcpClient : public QTcpSocket
 {
     Q_OBJECT
 public:
-    explicit tcpClient(QObject *parent = 0,int clientID=0);
-    
-private:
-    int clientID;
-    bool isAdmin;
+    explicit tcpClient(QObject *parent = 0);
 
+public:
+    clientInfo Info;
+    
 signals:
-    void shareData(QByteArray data);
-    void updateShow();
-    void newRecord(QString No,int state);
+    void RcvData(int index, QByteArray data);
     void ClientDisConnect(int clientID);
 private slots:
     void ReadData();
     void DisConnect();
 
-public:
-    int clientHeart;
-    clientInfo Info;
-
 private:
+    quint16 blockSize;
+
+
     //发送文件所需变量
     qint64  loadSize;          //每次接收的数据块大小
 

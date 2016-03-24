@@ -16,30 +16,31 @@ public:
 public:
     QList<int> ClientID;
     QList<tcpClient *> ClientList;
+    QList<tcpClient *> ClientActive;
     tcpClient *CurrentClient;
 
-    int clientCount;
+    tcpClient *tcpPool[MAX_CLIENT];
+
+    int ClientCount;
 public slots:
     void SendData(int clientID, QByteArray data);
     void SendDataCurrent(QByteArray data);
     void SendDataAll(QByteArray data);
 
-    int ClientCount()const{return clientCount;}
     void CloseAllClient();
+
 
 protected:
     void incomingConnection(int handle);
 
 signals:
-    void updateShow();
-    void newRecord(QString No,int state);
-    void shareData(QByteArray data);
+    void ClientConnected(int index);
+    void ClientDisconnect(int index);
+    void ClientRcvData(int index, QByteArray data);
     void error(QTcpSocket::SocketError socketError);
 
 private slots:
-    void DisConnect(int clientID);
-    void heartBeat();
-    
+    void DisConnect(int index);
 };
 
 #endif // TCPSERVER_H

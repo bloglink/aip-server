@@ -8,11 +8,19 @@
 tcpServer::tcpServer(QObject *parent) :
     QTcpServer(parent)
 {
-    this->clientCount=0;
+    int i;
 
-    QTimer *timer = new QTimer(this);
-    connect (timer,SIGNAL(timeout()),this,SLOT(heartBeat()));
-    timer->start(5000);
+    for (i=0; i<MAX_CLIENT; i++) {
+        tcpPool[i] = new tcpClient(this);
+        tcpPool[i]->Info.isFree = true;
+        tcpPool[i]->Info.ID = QString::number(i);
+
+        connect(tcpPool[i],SIGNAL(RcvData(int,QByteArray)),
+                this,SIGNAL(ClientRcvData(int,QByteArray)));
+        connect(tcpPool[i],SIGNAL(ClientDisConnect(int)),
+                this,SLOT(DisConnect(int)));
+    }
+    ClientCount = 0;
 }
 /******************************************************************************
   * version:    1.0
@@ -22,37 +30,26 @@ tcpServer::tcpServer(QObject *parent) :
 ******************************************************************************/
 void tcpServer::incomingConnection(int handle)
 {
-    tcpClient *client = new tcpClient(this,handle);
+    int i;
 
-    if (!client->setSocketDescriptor(handle)) {
-        emit error(client->error());
-        return;
+    for (i=0; i<MAX_CLIENT; i++) {
+        if (tcpPool[i]->Info.isFree == true) {
+            tcpPool[i]->Info.isFree =false;
+            break;
+        }
     }
 
-    connect(client,SIGNAL(shareData(QByteArray)),
-            this,SIGNAL(shareData(QByteArray)));
-    connect(client,SIGNAL(updateShow()),this,SIGNAL(updateShow()));
-    connect(client,SIGNAL(newRecord(QString,int)),
-            this,SIGNAL(newRecord(QString,int)));
-    connect(client,SIGNAL(ClientDisConnect(int)),
-            this,SLOT(DisConnect(int)));
-    ClientList.append(client);
-    ClientID.append(handle);
-    clientCount++;
+    if (!tcpPool[i]->setSocketDescriptor(handle)) {
+        qDebug()<<tcpPool[i]->error();
+        return;
+    }
+    tcpPool[i]->Info.TIME = QTime::currentTime().toString();
+    tcpPool[i]->Info.heart = 0;
+    ClientList.append(tcpPool[i]);
+    ClientID.append(i);
+    ClientCount++;
 
-    CurrentClient = client;
-    client->Info.Id = QString::number(handle);
-    client->Info.Port = QString::number(client->peerPort());
-    client->Info.Time = QTime::currentTime().toString();
-    client->Info.heart = 0;
-
-    emit updateShow();
-
-    qDebug()<<client->peerAddress().toString();
-
-    QByteArray data;
-    data[0] = type_ip;
-    client->write(data);
+    emit ClientConnected(i);
 }
 /******************************************************************************
   * version:    1.0
@@ -60,17 +57,16 @@ void tcpServer::incomingConnection(int handle)
   * date:       2016.03.18
   * brief:      移除指定连接
 ******************************************************************************/
-void tcpServer::DisConnect(int clientID)
+void tcpServer::DisConnect(int index)
 {
     int i;
-    for (i=0; i<clientCount; i++) {
-        if (ClientID[i] == clientID) {
-            ClientList[i]->close();
+    for (i=0; i<ClientCount; i++) {
+        if (ClientID[i] == index) {
             ClientID.removeAt(i);
             ClientList.removeAt(i);
-            clientCount--;
+            ClientCount--;
             i--;
-            emit updateShow();
+            emit ClientDisconnect(index);
             break;
         }
     }
@@ -81,14 +77,21 @@ void tcpServer::DisConnect(int clientID)
   * date:       2016.03.18
   * brief:      指定客户端连接发消息
 ******************************************************************************/
-void tcpServer::SendData(int clientID, QByteArray data)
+void tcpServer::SendData(int index, QByteArray data)
 {
-    for (int i=0;i<clientCount;i++) {
-        if (ClientID[i] == clientID) {
-            ClientList[i]->write(data);
-            break;
-        }
-    }
+    if (ClientCount<1)
+        return;
+
+    QByteArray msg;
+    QDataStream out(&msg,QIODevice::ReadWrite);
+    out.setVersion(QDataStream::Qt_4_8);
+    out<<(quint16)0;
+    out<<data;
+    out.device()->seek(0);
+    out<<(quint16)(msg.size() - sizeof(quint16));
+
+    ClientList[index]->write(msg);
+
 }
 /******************************************************************************
   * version:    1.0
@@ -98,13 +101,10 @@ void tcpServer::SendData(int clientID, QByteArray data)
 ******************************************************************************/
 void tcpServer::SendDataCurrent(QByteArray data)
 {
-    if (clientCount<1)
+    if (ClientCount<1)
         return;
-    QByteArray msg;
-    msg[0] = quint8(sendtype_msg);
-    msg.append(data);
 
-    CurrentClient->write(msg);
+    CurrentClient->write(data);
 }
 /******************************************************************************
   * version:    1.0
@@ -118,7 +118,7 @@ void tcpServer::SendDataAll(QByteArray data)
     QByteArray msg;
     msg[0] = quint8(sendtype_msg);
     msg.append(data);
-    for (i=0; i<clientCount; i++)
+    for (i=0; i<ClientCount; i++)
         ClientList[i]->write(msg);
 }
 /******************************************************************************
@@ -130,32 +130,11 @@ void tcpServer::SendDataAll(QByteArray data)
 void tcpServer::CloseAllClient()
 {
     int i;
-    for (i=0; i<clientCount; i++) {
+    for (i=0; i<ClientCount; i++) {
+        ClientList[i]->Info.isFree = true;
         ClientList[i]->close();
+
         i--;
     }
 }
-/******************************************************************************
-  * version:    1.0
-  * author:     link
-  * date:       2016.03.18
-  * brief:      心跳检测
-******************************************************************************/
-void tcpServer::heartBeat()
-{
-    int i;
-
-    QByteArray msg;
-    msg[0] = quint8(type_heart);
-
-    for (i=0; i<clientCount; i++) {
-        if (ClientList[i]->clientHeart > 5) {
-            ClientList[i]->disconnectFromHost();
-        }else if (ClientList[i]->clientHeart == 0) {
-            SendData(ClientID[i],msg);
-        }
-        ClientList[i]->clientHeart++;
-    }
-}
-
 
