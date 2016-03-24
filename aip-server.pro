@@ -25,8 +25,7 @@ HEADERS  += \
     w_home.h \
     linux_sql.h
 
-RESOURCES += \
-    image.qrc
+RESOURCES +=
 
 FORMS += \
     w_home.ui
