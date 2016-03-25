@@ -87,8 +87,8 @@ void w_Home::system()
 
     int i;
     QByteArray msg;
-    msg[0] = type_msg;
-    msg.append(QString::number(type_heart));
+    msg[0] = send_type_msg;
+    msg.append(QString::number(send_type_heart));
     if (sysStep%100 == 0) {
         for (i=0; i<server->ClientCount; i++) {
             server->ClientList[i]->Info.heart++;
@@ -108,24 +108,24 @@ void w_Home::system()
 void w_Home::ClientConnected(int index)
 {
     QByteArray msg;
-    msg[0] = type_msg;
-    msg.append(QString::number(type_ip));
-    server->SendData(index,msg);
+    msg[0] = send_type_msg;
+    msg.append(QString::number(send_type_ip));
+    server->SendData(index, msg);
 
     msg.clear();
-    msg[0] = type_msg;
-    msg.append(QString::number(type_No));
-    server->SendData(index,msg);
+    msg[0] = send_type_msg;
+    msg.append(QString::number(send_type_No));
+    server->SendData(index, msg);
 
     msg.clear();
-    msg[0] = type_msg;
-    msg.append(QString::number(type_mac));
-    server->SendData(index,msg);
+    msg[0] = send_type_msg;
+    msg.append(QString::number(send_type_mac));
+    server->SendData(index, msg);
 
     msg.clear();
-    msg[0] = type_msg;
-    msg.append(QString::number(type_version));
-    server->SendData(index,msg);
+    msg[0] = send_type_msg;
+    msg.append(QString::number(send_type_version));
+    server->SendData(index, msg);
 }
 /******************************************************************************
   * version:    1.0
@@ -153,32 +153,29 @@ void w_Home::ClientRcvData(int index, QByteArray data)
 {
     quint8 fun = quint8(data[0]);
     data.remove(0,1);
-    qDebug()<<data;
 
     switch (fun) {
-    case type_ip:
+    case reply_type_ip:
         server->tcpPool[index]->Info.IP = data;
         break;
-    case type_No:
+    case reply_type_No:
         server->tcpPool[index]->Info.NO = data;
         break;
-    case type_mac:
+    case reply_type_mac:
         server->tcpPool[index]->Info.MAC = data;
         break;
-    case type_version:
+    case reply_type_version:
         server->tcpPool[index]->Info.VERSION = data;
-        if (server->tcpPool[index]->Info.isInit == false) {
-            newRecord(index,state_upper);
-            server->tcpPool[index]->Info.isInit = true;
-        }
+        newRecord(index, state_upper);
         break;
-    case type_test:
+    case reply_type_test:
         newRecord(index, state_test);
         break;
-    case type_heart:
+    case reply_type_heart:
         server->tcpPool[index]->Info.heart = 0;
+        return;
         break;
-    case type_config:
+    case reply_type_config:
         server->tcpPool[index]->Info.PARAM = data;
         newRecord(index, state_config);
         break;
@@ -224,18 +221,16 @@ void w_Home::on_pushButton_clicked()
     if (ui->lineEditSend->text().isEmpty())
         return;
 
-    QByteArray data;
-
-    data[0] = type_msg;
-    data.append(ui->lineEditSend->text().toUtf8());
-
     int ret = ui->tableWidget->currentRow();
+    if (ret < 0)
+        return;
+
     int index = server->ClientList[ret+page*W_ROW]->Info.ID.toInt();
 
-    if (ret < 0)
-        server->SendDataCurrent(data);
-    else
-        server->SendData(index, data);
+    QByteArray msg;
+    msg[0] = send_type_msg;
+    msg.append(ui->lineEditSend->text().toUtf8());
+    server->SendData(index, msg);
 }
 /******************************************************************************
   * version:    1.0
@@ -272,6 +267,7 @@ void w_Home::newRecord(int index,int state)
             insertRow(server->tcpPool[index]->Info.NO,index,"上线");
             server->tcpPool[index]->Info.isInit = true;
             qDebug()<<"上线";
+            qDebug()<<QTime::currentTime().toString();
         }
         break;
     case state_lower:
@@ -281,6 +277,7 @@ void w_Home::newRecord(int index,int state)
             insertRow(server->tcpPool[index]->Info.NO,index,"下线");
             updateShow();
             qDebug()<<"下线";
+            qDebug()<<QTime::currentTime().toString();
         }
         break;
     case state_error:

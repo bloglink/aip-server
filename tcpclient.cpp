@@ -24,7 +24,6 @@ tcpClient::tcpClient(QObject *parent) :
 ******************************************************************************/
 void tcpClient::ReadData()
 {
-
     QByteArray data;
     QDataStream in(this);
     in.setVersion(QDataStream::Qt_4_8);

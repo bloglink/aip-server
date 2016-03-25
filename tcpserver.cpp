@@ -53,6 +53,7 @@ void tcpServer::incomingConnection(int handle)
         return;
     }
     tcpPool[i]->Info.TIME = QTime::currentTime().toString();
+    tcpPool[i]->Info.isInit = false;
     tcpPool[i]->Info.heart = 0;
     ClientList.append(tcpPool[i]);
     ClientID.append(i);
@@ -101,7 +102,7 @@ void tcpServer::SendData(int index, QByteArray data)
     out.device()->seek(0);
     out<<(quint16)(msg.size() - sizeof(quint16));
 
-    ClientList[index]->write(msg);
+    tcpPool[index]->write(msg);
 
 }
 /******************************************************************************
@@ -127,7 +128,7 @@ void tcpServer::SendDataAll(QByteArray data)
 {
     int i;
     QByteArray msg;
-    msg[0] = quint8(sendtype_msg);
+    msg[0] = quint8(send_type_msg);
     msg.append(data);
     for (i=0; i<ClientCount; i++)
         ClientList[i]->write(msg);

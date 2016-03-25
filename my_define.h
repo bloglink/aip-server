@@ -49,13 +49,37 @@ struct clientInfo   //客户端信息
     int heart;
 };
 
-const quint8 sendtype_file = 0;    //发送类型是文件
-const quint8 sendtype_start_test = 10;    //发送类型是开始测试
-const quint8 sendtype_msg = 20;    //发送类型是消息
-const quint8 sendtype_heart = 30;
+const quint8 send_type_reboot   = 0;
+const quint8 send_type_ip       = 1;
+const quint8 send_type_No       = 2;
+const quint8 send_type_mac      = 3;
+const quint8 send_type_test     = 4;
+const quint8 send_type_heart    = 5;
+const quint8 send_type_state    = 6;
+const quint8 send_type_version  = 7;
+const quint8 send_type_config   = 8;
+const quint8 send_type_network  = 9;
+const quint8 send_type_result   = 10;
 
-const quint8 type_msg      = 55;
-const quint8 type_reply    = 56;
+const quint8 send_type_msg      = 55;
+const quint8 send_type_file     = 55;
+const quint8 send_type_admin    = 56;
+
+const quint8 reply_type_fun      = 100;
+
+const quint8 reply_type_reboot   = 0 + reply_type_fun;
+const quint8 reply_type_ip       = 1 + reply_type_fun;
+const quint8 reply_type_No       = 2 + reply_type_fun;
+const quint8 reply_type_mac      = 3 + reply_type_fun;
+const quint8 reply_type_test     = 4 + reply_type_fun;
+const quint8 reply_type_heart    = 5 + reply_type_fun;
+const quint8 reply_type_state    = 6 + reply_type_fun;
+const quint8 reply_type_version  = 7 + reply_type_fun;
+const quint8 reply_type_config   = 8 + reply_type_fun;
+const quint8 reply_type_network  = 9 + reply_type_fun;
+const quint8 reply_type_result   = 10+ reply_type_fun;
+const quint8 reply_type_file     = 11+ reply_type_fun;
+const quint8 reply_type_wave     = 12+ reply_type_fun;
 
 const quint8 type_reboot   = 0;
 const quint8 type_ip       = 1;
@@ -66,6 +90,13 @@ const quint8 type_heart    = 5;
 const quint8 type_state    = 6;
 const quint8 type_version  = 7;
 const quint8 type_config   = 8;
+const quint8 type_network  = 9;
+const quint8 type_result   = 10;
+const quint8 type_file     = 11;
+const quint8 type_wave     = 12;
+
+const quint8 type_msg      = 55;
+const quint8 type_admin    = 56;
 
 const quint8 state_upper   = 0;
 const quint8 state_lower   = 1;
