@@ -40,12 +40,7 @@ void tcpClient::ReadData()
 
         in >> data;
 
-        quint8 fun = quint8(data[0]);
-
-        if (fun == type_heart)
-            Info.heart = 0;
-        else
-            emit RcvData(Info.ID.toInt(), data);
+        emit RcvData(Info.ID.toInt(), data);
 
         blockSize = 0;
     }

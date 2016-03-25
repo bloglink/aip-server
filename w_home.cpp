@@ -87,7 +87,8 @@ void w_Home::system()
 
     int i;
     QByteArray msg;
-    msg[0] = type_heart;
+    msg[0] = type_msg;
+    msg.append(QString::number(type_heart));
     if (sysStep%100 == 0) {
         for (i=0; i<server->ClientCount; i++) {
             server->ClientList[i]->Info.heart++;
@@ -173,6 +174,9 @@ void w_Home::ClientRcvData(int index, QByteArray data)
         break;
     case type_test:
         newRecord(index, state_test);
+        break;
+    case type_heart:
+        server->tcpPool[index]->Info.heart = 0;
         break;
     case type_config:
         server->tcpPool[index]->Info.PARAM = data;
