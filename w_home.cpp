@@ -28,10 +28,10 @@ w_Home::w_Home(QWidget *parent) :
 
     QStringList str;
     str.append(tr("ID"));
-    str.append(tr("IP"));
+    str.append(tr("IP地址"));
     str.append(tr("出厂编号"));
     str.append(tr("MAC地址"));
-    str.append(tr("时间"));
+    str.append(tr("上线时间"));
     str.append(tr("软件版本"));
 
     ui->tableWidget->setColumnCount(str.size());
@@ -87,8 +87,7 @@ void w_Home::system()
 
     int i;
     QByteArray msg;
-    msg[0] = send_type_msg;
-    msg.append(QString::number(send_type_heart));
+    msg.append(quint8(send_type_heart));
     if (sysStep%100 == 0) {
         for (i=0; i<server->ClientCount; i++) {
             server->ClientList[i]->Info.heart++;
@@ -108,23 +107,19 @@ void w_Home::system()
 void w_Home::ClientConnected(int index)
 {
     QByteArray msg;
-    msg[0] = send_type_msg;
-    msg.append(QString::number(send_type_ip));
+    msg.append(quint8(send_type_ip));
     server->SendData(index, msg);
 
     msg.clear();
-    msg[0] = send_type_msg;
-    msg.append(QString::number(send_type_No));
+    msg.append(quint8(send_type_No));
     server->SendData(index, msg);
 
     msg.clear();
-    msg[0] = send_type_msg;
-    msg.append(QString::number(send_type_mac));
+    msg.append(quint8(send_type_mac));
     server->SendData(index, msg);
 
     msg.clear();
-    msg[0] = send_type_msg;
-    msg.append(QString::number(send_type_version));
+    msg.append(quint8(send_type_version));
     server->SendData(index, msg);
 }
 /******************************************************************************
@@ -152,6 +147,7 @@ void w_Home::ClientDisconnect(int index)
 void w_Home::ClientRcvData(int index, QByteArray data)
 {
     quint8 fun = quint8(data[0]);
+
     data.remove(0,1);
 
     switch (fun) {
@@ -174,6 +170,8 @@ void w_Home::ClientRcvData(int index, QByteArray data)
     case reply_type_heart:
         server->tcpPool[index]->Info.heart = 0;
         return;
+        break;
+    case reply_type_state:
         break;
     case reply_type_config:
         server->tcpPool[index]->Info.PARAM = data;
@@ -228,8 +226,7 @@ void w_Home::on_pushButton_clicked()
     int index = server->ClientList[ret+page*W_ROW]->Info.ID.toInt();
 
     QByteArray msg;
-    msg[0] = send_type_msg;
-    msg.append(ui->lineEditSend->text().toUtf8());
+    msg.append((quint8)ui->lineEditSend->text().toInt());
     server->SendData(index, msg);
 }
 /******************************************************************************
@@ -367,4 +364,15 @@ void w_Home::on_pushButtonNext_clicked()
         page++;
         updateShow();
     }
+}
+
+void w_Home::on_pushButtonFile_clicked()
+{
+    int ret = ui->tableWidget->currentRow();
+    if (ret < 0)
+        return;
+
+    int index = server->ClientList[ret+page*W_ROW]->Info.ID.toInt();
+
+    server->tcpPool[index]->startTransfer();
 }

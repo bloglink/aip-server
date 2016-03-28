@@ -38,6 +38,7 @@ public:
     QPushButton *pushButton;
     QHBoxLayout *horizontalLayout_4;
     QPushButton *pushButtonStart;
+    QPushButton *pushButtonFile;
     QPushButton *pushButtonPrev;
     QPushButton *pushButtonNext;
 
@@ -100,6 +101,11 @@ public:
 
         horizontalLayout_4->addWidget(pushButtonStart);
 
+        pushButtonFile = new QPushButton(w_Home);
+        pushButtonFile->setObjectName(QString::fromUtf8("pushButtonFile"));
+
+        horizontalLayout_4->addWidget(pushButtonFile);
+
         pushButtonPrev = new QPushButton(w_Home);
         pushButtonPrev->setObjectName(QString::fromUtf8("pushButtonPrev"));
 
@@ -126,6 +132,7 @@ public:
         label_3->setText(QApplication::translate("w_Home", "\345\217\221\351\200\201\346\225\260\346\215\256", 0, QApplication::UnicodeUTF8));
         pushButton->setText(QApplication::translate("w_Home", "\345\217\221\351\200\201", 0, QApplication::UnicodeUTF8));
         pushButtonStart->setText(QApplication::translate("w_Home", "\345\274\200\345\247\213\347\233\221\345\220\254", 0, QApplication::UnicodeUTF8));
+        pushButtonFile->setText(QApplication::translate("w_Home", "\346\265\213\350\257\225\345\217\221\351\200\201\346\226\207\344\273\266", 0, QApplication::UnicodeUTF8));
         pushButtonPrev->setText(QApplication::translate("w_Home", "\344\270\212\344\270\200\351\241\265", 0, QApplication::UnicodeUTF8));
         pushButtonNext->setText(QApplication::translate("w_Home", "\344\270\213\344\270\200\351\241\265", 0, QApplication::UnicodeUTF8));
     } // retranslateUi

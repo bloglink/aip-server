@@ -24,10 +24,10 @@ tcpServer::tcpServer(QObject *parent) :
         tcpPool[i]->Info.isFree = true;
         tcpPool[i]->Info.ID = QString::number(i);
 
-        connect(tcpPool[i],SIGNAL(RcvData(int,QByteArray)),
-                this,SIGNAL(ClientRcvData(int,QByteArray)));
-        connect(tcpPool[i],SIGNAL(ClientDisConnect(int)),
-                this,SLOT(DisConnect(int)));
+        connect(tcpPool[i], SIGNAL(RcvData(int,QByteArray)),
+                this, SIGNAL(ClientRcvData(int,QByteArray)));
+        connect(tcpPool[i], SIGNAL(ClientDisConnect(int)),
+                this, SLOT(DisConnect(int)));
     }
     ClientCount = 0;
 }
@@ -97,42 +97,16 @@ void tcpServer::SendData(int index, QByteArray data)
     QByteArray msg;
     QDataStream out(&msg,QIODevice::ReadWrite);
     out.setVersion(QDataStream::Qt_4_8);
-    out<<(quint16)0;
+    out<<(qint64)0<<(quint8)0;
     out<<data;
     out.device()->seek(0);
-    out<<(quint16)(msg.size() - sizeof(quint16));
+    out<<(qint64)(msg.size()-sizeof(qint64))<<(quint8)(send_type_msg);
 
     tcpPool[index]->write(msg);
+//    tcpPool[index]->waitForBytesWritten(-1);
+}
 
-}
-/******************************************************************************
-  * version:    1.0
-  * author:     link
-  * date:       2016.03.18
-  * brief:      对当前连接发送数据
-******************************************************************************/
-void tcpServer::SendDataCurrent(QByteArray data)
-{
-    if (ClientCount<1)
-        return;
 
-    CurrentClient->write(data);
-}
-/******************************************************************************
-  * version:    1.0
-  * author:     link
-  * date:       2016.03.18
-  * brief:      对所有连接发送数据
-******************************************************************************/
-void tcpServer::SendDataAll(QByteArray data)
-{
-    int i;
-    QByteArray msg;
-    msg[0] = quint8(send_type_msg);
-    msg.append(data);
-    for (i=0; i<ClientCount; i++)
-        ClientList[i]->write(msg);
-}
 /******************************************************************************
   * version:    1.0
   * author:     link
@@ -143,9 +117,7 @@ void tcpServer::CloseAllClient()
 {
     int i;
     for (i=0; i<ClientCount; i++) {
-        ClientList[i]->Info.isFree = true;
         ClientList[i]->close();
-
         i--;
     }
 }

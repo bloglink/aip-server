@@ -24,11 +24,7 @@ public:
     int ClientCount;
 public slots:
     void SendData(int index, QByteArray data);
-    void SendDataCurrent(QByteArray data);
-    void SendDataAll(QByteArray data);
-
     void CloseAllClient();
-
 protected:
     void incomingConnection(int handle);
 

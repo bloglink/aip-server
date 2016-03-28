@@ -78,6 +78,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="pushButtonFile">
+       <property name="text">
+        <string>测试发送文件</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pushButtonPrev">
        <property name="text">
         <string>上一页</string>
