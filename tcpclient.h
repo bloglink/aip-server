@@ -1,20 +1,8 @@
 #ifndef TCPCLIENT_H
 #define TCPCLIENT_H
 
-#include <QTcpSocket>
-#include <QHostAddress>
-#include <QDesktopWidget>
 #include <QFile>
-#include <QTextCodec>
-#include <QMessageBox>
-#include <QAbstractButton>
-#include <QCoreApplication>
-#include <QFileDialog>
-#include <QTime>
-#include <QProcess>
-#include <QDir>
-#include <QApplication>
-
+#include <QTcpSocket>
 #include <QDataStream>
 
 #include "my_define.h"
@@ -28,14 +16,16 @@ public:
 public:
     clientInfo Info;
 public slots:
-    void StartTransfer(QString fileName);    //开始传输文件
     void SendMessage(quint8 type, QByteArray data);
+    void StartTransfer(QString fileName);
+    void HeartBeat();
+    void HeartClear();
 signals:
-    void RcvData(int index, QByteArray data);
     void RcvMessage(int index, quint8 type, QByteArray data);
     void ClientDisConnect(int index);
 private:
-    QFile *localFile;
+    int heart;
+    QFile *file;
 
     qint64 loadSize;
     qint64 blockSize;
@@ -44,16 +34,10 @@ private:
     qint64 bytesWritten;
     QByteArray outBlock;
 
-
 private slots:
     void ReadData();
     void DisConnect();
-//    void startSend(QByteArray data);
-
     void updateClientProgress(qint64 numBytes);  //发送文件内容
-
-
-
 };
 
 #endif // TCPCLIENT_H

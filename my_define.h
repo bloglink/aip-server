@@ -3,7 +3,7 @@
 
 #include <QDebug>
 
-#define DB_PATH "/home/link/aip-server/aip.db"
+#define DB_PATH "/home/link/aip-server-build/aip.db"
 
 #define W_ROW 50
 #define W_COL 6
@@ -28,7 +28,6 @@ struct clientInfo   //客户端信息
     QString TIME;
     QString VERSION;
     QString PARAM;
-    int heart;
 };
 
 const quint8 send_msg           = 0x00;

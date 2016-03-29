@@ -1,6 +1,7 @@
 #ifndef TCPSERVER_H
 #define TCPSERVER_H
 
+#include <QTime>
 #include <QTcpServer>
 
 #include "tcpclient.h"

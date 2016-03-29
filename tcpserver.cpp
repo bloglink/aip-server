@@ -54,7 +54,6 @@ void tcpServer::incomingConnection(int handle)
     }
     tcpPool[i]->Info.TIME = QTime::currentTime().toString();
     tcpPool[i]->Info.isInit = false;
-    tcpPool[i]->Info.heart = 0;
     ClientList.append(tcpPool[i]);
     ClientID.append(i);
     ClientCount++;

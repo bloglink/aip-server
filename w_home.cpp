@@ -89,12 +89,8 @@ void w_Home::system()
     int index;
     if (sysStep%100 == 0) {
         for (i=0; i<server->ClientCount; i++) {
-            server->ClientList[i]->Info.heart++;
             index = server->ClientID[i];
-            server->tcpPool[index]->SendMessage(send_type_heart,0);
-            if (server->ClientList[i]->Info.heart > 5) {
-                server->ClientList[i]->disconnectFromHost();
-            }
+            server->tcpPool[index]->HeartBeat();
         }
     }
 }
@@ -121,11 +117,10 @@ void w_Home::ClientConnected(int index)
 ******************************************************************************/
 void w_Home::ClientDisconnect(int index)
 {
-    if (server->tcpPool[index]->Info.isInit) {
+    server->tcpPool[index]->Info.isInit = false;
+    server->tcpPool[index]->Info.isFree = true;
+    if (server->tcpPool[index]->Info.isInit)
         newRecord(index, state_lower);
-        server->tcpPool[index]->Info.isInit = false;
-        server->tcpPool[index]->Info.isFree = true;
-    }
     updateShow();
 }
 /******************************************************************************
@@ -154,7 +149,7 @@ void w_Home::ClientRcvMessage(int index, quint8 type, QByteArray data)
         newRecord(index, state_test);
         break;
     case reply_type_heart:
-        server->tcpPool[index]->Info.heart = 0;
+        server->tcpPool[index]->HeartClear();
         return;
         break;
     case reply_type_state:

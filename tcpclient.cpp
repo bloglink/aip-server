@@ -17,6 +17,7 @@
 tcpClient::tcpClient(QObject *parent) :
     QTcpSocket(parent)
 {
+    heart        = 0;
     loadSize     = 4*1024;
     blockSize    = 0;
     totalBytes   = 0;
@@ -89,13 +90,13 @@ void tcpClient::StartTransfer(QString fileName)
 {
     QByteArray msg;
 
-    localFile = new QFile(fileName);
-    if (!localFile->open(QFile::ReadOnly)) {
+    file = new QFile(fileName);
+    if (!file->open(QFile::ReadOnly)) {
         qDebug() << "open file error!";
         return;
     }
 
-    totalBytes = localFile->size();
+    totalBytes = file->size();
     msg.append(QString::number(totalBytes));
     this->SendMessage(send_type_size, msg);
 
@@ -124,15 +125,41 @@ void tcpClient::updateClientProgress(qint64 numBytes)
 
     bytesWritten += (int)numBytes;
 
-    msg = localFile->read(loadSize);
+    msg = file->read(loadSize);
 
     this->SendMessage(send_type_file, msg);
 
     bytesToWrite -= (int)qMin(bytesToWrite,loadSize);
 
     if (bytesToWrite == 0)
-        localFile->close();
+        file->close();
 
+}
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.29
+  * brief:      心跳处理
+******************************************************************************/
+void tcpClient::HeartBeat()
+{
+    heart++;
+    SendMessage(send_type_heart,0);
+    if (heart >= 10) {
+        heart = 0;
+        qDebug("disconnect");
+        disconnectFromHost();
+    }
+}
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.29
+  * brief:      清零心跳
+******************************************************************************/
+void tcpClient::HeartClear()
+{
+    heart = 0;
 }
 /******************************************************************************
   * version:    1.0
