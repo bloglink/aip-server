@@ -74,8 +74,8 @@ void w_Home::system()
         break;
     case 1:
         server = new tcpServer(this);
-        connect(server,SIGNAL(ClientRcvData(int,QByteArray)),
-                this,SLOT(ClientRcvData(int,QByteArray)));
+        connect(server,SIGNAL(ClientRcvMessage(int,quint8,QByteArray)),
+                this,SLOT(ClientRcvMessage(int,quint8,QByteArray)));
         connect(server,SIGNAL(ClientDisconnect(int)),
                 this,SLOT(ClientDisconnect(int)));
         connect(server,SIGNAL(ClientConnected(int)),this,SLOT(ClientConnected(int)));
@@ -88,10 +88,12 @@ void w_Home::system()
     int i;
     QByteArray msg;
     msg.append(quint8(send_type_heart));
+    int index;
     if (sysStep%100 == 0) {
         for (i=0; i<server->ClientCount; i++) {
             server->ClientList[i]->Info.heart++;
-            server->SendData(server->ClientID[i],msg);
+            index = server->ClientID[i];
+            server->tcpPool[index]->SendMessage(send_type_heart,0);
             if (server->ClientList[i]->Info.heart > 5) {
                 server->ClientList[i]->disconnectFromHost();
             }
@@ -106,21 +108,10 @@ void w_Home::system()
 ******************************************************************************/
 void w_Home::ClientConnected(int index)
 {
-    QByteArray msg;
-    msg.append(quint8(send_type_ip));
-    server->SendData(index, msg);
-
-    msg.clear();
-    msg.append(quint8(send_type_No));
-    server->SendData(index, msg);
-
-    msg.clear();
-    msg.append(quint8(send_type_mac));
-    server->SendData(index, msg);
-
-    msg.clear();
-    msg.append(quint8(send_type_version));
-    server->SendData(index, msg);
+    server->tcpPool[index]->SendMessage(send_type_ip,0);
+    server->tcpPool[index]->SendMessage(send_type_No,0);
+    server->tcpPool[index]->SendMessage(send_type_mac,0);
+    server->tcpPool[index]->SendMessage(send_type_version,0);
 }
 /******************************************************************************
   * version:    1.0
@@ -137,20 +128,15 @@ void w_Home::ClientDisconnect(int index)
         server->tcpPool[index]->Info.isFree = true;
     }
 }
-
 /******************************************************************************
   * version:    1.0
   * author:     link
   * date:       2016.03.24
   * brief:      接收数据
 ******************************************************************************/
-void w_Home::ClientRcvData(int index, QByteArray data)
+void w_Home::ClientRcvMessage(int index, quint8 type, QByteArray data)
 {
-    quint8 fun = quint8(data[0]);
-
-    data.remove(0,1);
-
-    switch (fun) {
+    switch (type) {
     case reply_type_ip:
         server->tcpPool[index]->Info.IP = data;
         break;
@@ -225,9 +211,8 @@ void w_Home::on_pushButton_clicked()
 
     int index = server->ClientList[ret+page*W_ROW]->Info.ID.toInt();
 
-    QByteArray msg;
-    msg.append((quint8)ui->lineEditSend->text().toInt());
-    server->SendData(index, msg);
+    quint8 type = (quint8)ui->lineEditSend->text().toInt();
+    server->tcpPool[index]->SendMessage(type,0);
 }
 /******************************************************************************
   * version:    1.0
@@ -374,5 +359,5 @@ void w_Home::on_pushButtonFile_clicked()
 
     int index = server->ClientList[ret+page*W_ROW]->Info.ID.toInt();
 
-    server->tcpPool[index]->startTransfer();
+    server->tcpPool[index]->StartTransfer();
 }

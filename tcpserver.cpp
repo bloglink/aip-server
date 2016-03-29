@@ -24,8 +24,8 @@ tcpServer::tcpServer(QObject *parent) :
         tcpPool[i]->Info.isFree = true;
         tcpPool[i]->Info.ID = QString::number(i);
 
-        connect(tcpPool[i], SIGNAL(RcvData(int,QByteArray)),
-                this, SIGNAL(ClientRcvData(int,QByteArray)));
+        connect(tcpPool[i], SIGNAL(RcvMessage(int,quint8,QByteArray)),
+                this, SIGNAL(ClientRcvMessage(int,quint8,QByteArray)));
         connect(tcpPool[i], SIGNAL(ClientDisConnect(int)),
                 this, SLOT(DisConnect(int)));
     }
@@ -59,8 +59,6 @@ void tcpServer::incomingConnection(int handle)
     ClientID.append(i);
     ClientCount++;
 
-    CurrentClient = tcpPool[i];
-
     emit ClientConnected(i);
 }
 /******************************************************************************
@@ -83,30 +81,6 @@ void tcpServer::DisConnect(int index)
         }
     }
 }
-/******************************************************************************
-  * version:    1.0
-  * author:     link
-  * date:       2016.03.18
-  * brief:      指定客户端连接发消息
-******************************************************************************/
-void tcpServer::SendData(int index, QByteArray data)
-{
-    if (ClientCount<1)
-        return;
-
-    QByteArray msg;
-    QDataStream out(&msg,QIODevice::ReadWrite);
-    out.setVersion(QDataStream::Qt_4_8);
-    out<<(qint64)0<<(quint8)0;
-    out<<data;
-    out.device()->seek(0);
-    out<<(qint64)(msg.size()-sizeof(qint64))<<(quint8)(send_type_msg);
-
-    tcpPool[index]->write(msg);
-//    tcpPool[index]->waitForBytesWritten(-1);
-}
-
-
 /******************************************************************************
   * version:    1.0
   * author:     link

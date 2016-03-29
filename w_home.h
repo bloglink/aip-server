@@ -40,7 +40,7 @@ private slots:
     void updateShow();
     void ClientConnected(int index);
     void ClientDisconnect(int index);
-    void ClientRcvData(int index, QByteArray data);
+    void ClientRcvMessage(int index, quint8 type, QByteArray data);
     void newRecord(int index,int state);
     void createTable(QString No);
     void insertRow(QString No, int row, QString state);

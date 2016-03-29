@@ -28,11 +28,11 @@ public:
 public:
     clientInfo Info;
 public slots:
-    void SendFile(QByteArray data);
-    void startTransfer();    //开始传输文件
+    void StartTransfer();    //开始传输文件
     void SendMessage(quint8 type, QByteArray data);
 signals:
     void RcvData(int index, QByteArray data);
+    void RcvMessage(int index, quint8 type, QByteArray data);
     void ClientDisConnect(int index);
 private:
     QFile *localFile;

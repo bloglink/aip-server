@@ -12,15 +12,16 @@
 tcpClient::tcpClient(QObject *parent) :
     QTcpSocket(parent)
 {
-    blockSize = 0;
-    loadSize = 4*1024;
-    totalBytes = 0;
-
+    loadSize     = 4*1024;
+    blockSize    = 0;
+    totalBytes   = 0;
     bytesToWrite = 0;
     bytesWritten = 0;
+
     connect(this, SIGNAL(readyRead()), this, SLOT(ReadData()));
     connect(this, SIGNAL(disconnected()), this, SLOT(DisConnect()));
-    connect(this,SIGNAL(bytesWritten(qint64)),this,SLOT(updateClientProgress(qint64)));
+    connect(this, SIGNAL(bytesWritten(qint64)),
+            this, SLOT(updateClientProgress(qint64)));
 }
 /******************************************************************************
   * version:    1.0
@@ -30,7 +31,7 @@ tcpClient::tcpClient(QObject *parent) :
 ******************************************************************************/
 void tcpClient::ReadData()
 {
-    quint8 fun;
+    quint8 type;
     QByteArray data;
     QDataStream in(this);
     in.setVersion(QDataStream::Qt_4_8);
@@ -39,60 +40,41 @@ void tcpClient::ReadData()
         if (blockSize == 0) {
             if (this->bytesAvailable() < sizeof(qint64))
                 return;
+            in >> blockSize;
         }
-        in >> blockSize;
+
         if (this->bytesAvailable() < blockSize)
             return;
 
-        in >> fun;
+        in >> type >> data;
 
-        switch (fun) {
-        case reply_type_msg:
-            in >> data;
-            emit RcvData(Info.ID.toInt(), data);
-            break;
-        case send_type_file:
-            break;
-        default:
-            break;
-        }
+        emit RcvMessage(Info.ID.toInt(), type ,data);
 
         blockSize = 0;
     }
-}
-void tcpClient::SendFile(QByteArray data)
-{
-    QByteArray msg;
-    QDataStream out(&msg,QIODevice::ReadWrite);
-    out.setVersion(QDataStream::Qt_4_8);
-    out<<(qint64)0<<(quint8)0;
-    out<<data;
-    out.device()->seek(0);
-    out<<(qint64)(msg.size()-sizeof(qint64))<<(quint8)(send_type_file);
-
-    this->write(msg);
 }
 void tcpClient::SendMessage(quint8 type, QByteArray data)
 {
     int ret;
     QByteArray msg;
     QDataStream out(&msg,QIODevice::ReadWrite);
+
     out.setVersion(QDataStream::Qt_4_8);
-    out<<(qint64)0<<(quint8)0<<data;
+    out<<(qint64)0 << (quint8)type << data;
     out.device()->seek(0);
-    out<<(qint64)(msg.size()-sizeof(qint64))<<(quint8)(type);
+    out<<(qint64)(msg.size()-sizeof(qint64));
+
     ret = this->writeData(msg, msg.size());
     if (ret == -1)
         qDebug()<<this->errorString();
 }
 
-void tcpClient::startTransfer()
+void tcpClient::StartTransfer()
 {
     QByteArray msg;
     QString fileName = "/home/link/aip-server/001.cpp";
     localFile = new QFile(fileName);
-    if(!localFile->open(QFile::ReadOnly))
-    {
+    if (!localFile->open(QFile::ReadOnly)) {
         qDebug() << "open file error!";
         return;
     }
