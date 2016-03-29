@@ -8,7 +8,12 @@
  * brief:       客户端
 *******************************************************************************/
 #include "tcpclient.h"
-
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
+  * brief:      客户端
+******************************************************************************/
 tcpClient::tcpClient(QObject *parent) :
     QTcpSocket(parent)
 {
@@ -53,6 +58,12 @@ void tcpClient::ReadData()
         blockSize = 0;
     }
 }
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.29
+  * brief:      发送消息
+******************************************************************************/
 void tcpClient::SendMessage(quint8 type, QByteArray data)
 {
     int ret;
@@ -68,17 +79,21 @@ void tcpClient::SendMessage(quint8 type, QByteArray data)
     if (ret == -1)
         qDebug()<<this->errorString();
 }
-
-void tcpClient::StartTransfer()
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.29
+  * brief:      准备发送文件
+******************************************************************************/
+void tcpClient::StartTransfer(QString fileName)
 {
     QByteArray msg;
-    QString fileName = "/home/link/aip-server/001.cpp";
+
     localFile = new QFile(fileName);
     if (!localFile->open(QFile::ReadOnly)) {
         qDebug() << "open file error!";
         return;
     }
-
 
     totalBytes = localFile->size();
     msg.append(QString::number(totalBytes));
@@ -93,10 +108,14 @@ void tcpClient::StartTransfer()
 
     bytesToWrite = totalBytes;
     bytesWritten = 0;
-
 }
-
-void tcpClient::updateClientProgress(qint64 numBytes)  //发送文件内容
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.29
+  * brief:      发送文件内容
+******************************************************************************/
+void tcpClient::updateClientProgress(qint64 numBytes)
 {
     if (bytesToWrite == 0)
         return;
@@ -110,13 +129,11 @@ void tcpClient::updateClientProgress(qint64 numBytes)  //发送文件内容
     this->SendMessage(send_type_file, msg);
 
     bytesToWrite -= (int)qMin(bytesToWrite,loadSize);
-    qDebug()<<bytesToWrite;
 
     if (bytesToWrite == 0)
         localFile->close();
 
 }
-
 /******************************************************************************
   * version:    1.0
   * author:     link

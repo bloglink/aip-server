@@ -86,8 +86,6 @@ void w_Home::system()
     sysStep++;
 
     int i;
-    QByteArray msg;
-    msg.append(quint8(send_type_heart));
     int index;
     if (sysStep%100 == 0) {
         for (i=0; i<server->ClientCount; i++) {
@@ -112,6 +110,8 @@ void w_Home::ClientConnected(int index)
     server->tcpPool[index]->SendMessage(send_type_No,0);
     server->tcpPool[index]->SendMessage(send_type_mac,0);
     server->tcpPool[index]->SendMessage(send_type_version,0);
+    updateShow();
+    qDebug()<<"连接";
 }
 /******************************************************************************
   * version:    1.0
@@ -123,10 +123,10 @@ void w_Home::ClientDisconnect(int index)
 {
     if (server->tcpPool[index]->Info.isInit) {
         newRecord(index, state_lower);
-        updateShow();
         server->tcpPool[index]->Info.isInit = false;
         server->tcpPool[index]->Info.isFree = true;
     }
+    updateShow();
 }
 /******************************************************************************
   * version:    1.0
@@ -194,45 +194,7 @@ void w_Home::updateShow()
         pItem[i*W_COL+5]->setText(server->ClientList[i+page*W_ROW]->Info.VERSION);
     }
 }
-/******************************************************************************
-  * version:    1.0
-  * author:     link
-  * date:       2016.03.22
-  * brief:      发送数据
-******************************************************************************/
-void w_Home::on_pushButton_clicked()
-{
-    if (ui->lineEditSend->text().isEmpty())
-        return;
 
-    int ret = ui->tableWidget->currentRow();
-    if (ret < 0)
-        return;
-
-    int index = server->ClientList[ret+page*W_ROW]->Info.ID.toInt();
-
-    quint8 type = (quint8)ui->lineEditSend->text().toInt();
-    server->tcpPool[index]->SendMessage(type,0);
-}
-/******************************************************************************
-  * version:    1.0
-  * author:     link
-  * date:       2016.03.22
-  * brief:      开始监听
-******************************************************************************/
-void w_Home::on_pushButtonStart_clicked()
-{
-    if (!isServerOn) {
-        isServerOn = true;
-        ui->pushButtonStart->setText(tr("停止监听"));
-        server->listen(QHostAddress::Any,6000);
-    } else {
-        isServerOn = false;
-        ui->pushButtonStart->setText(tr("开始监听"));
-        server->CloseAllClient();
-        server->close();
-    }
-}
 /******************************************************************************
   * version:    1.0
   * author:     link
@@ -328,6 +290,25 @@ void w_Home::insertRow(QString No ,int index, QString state)
   * version:    1.0
   * author:     link
   * date:       2016.03.22
+  * brief:      开始监听
+******************************************************************************/
+void w_Home::on_pushButtonStart_clicked()
+{
+    if (!isServerOn) {
+        isServerOn = true;
+        ui->pushButtonStart->setText(tr("停止监听"));
+        server->listen(QHostAddress::Any,6000);
+    } else {
+        isServerOn = false;
+        ui->pushButtonStart->setText(tr("开始监听"));
+        server->CloseAllClient();
+        server->close();
+    }
+}
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
   * brief:      上一页
 ******************************************************************************/
 void w_Home::on_pushButtonPrev_clicked()
@@ -350,14 +331,44 @@ void w_Home::on_pushButtonNext_clicked()
         updateShow();
     }
 }
-
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.29
+  * brief:      测试发送文件
+******************************************************************************/
 void w_Home::on_pushButtonFile_clicked()
 {
     int ret = ui->tableWidget->currentRow();
     if (ret < 0)
         return;
 
+    if (ui->lineEditFile->text().isEmpty())
+        return;
+    QString fileName = ui->lineEditFile->text();
+
     int index = server->ClientList[ret+page*W_ROW]->Info.ID.toInt();
 
-    server->tcpPool[index]->StartTransfer();
+
+    server->tcpPool[index]->StartTransfer(fileName);
+}
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
+  * brief:      发送命令
+******************************************************************************/
+void w_Home::on_pushButtonCmd_clicked()
+{
+    if (ui->lineEditSend->text().isEmpty())
+        return;
+
+    int ret = ui->tableWidget->currentRow();
+    if (ret < 0)
+        return;
+
+    int index = server->ClientList[ret+page*W_ROW]->Info.ID.toInt();
+
+    quint8 type = (quint8)ui->lineEditSend->text().toInt();
+    server->tcpPool[index]->SendMessage(type,0);
 }

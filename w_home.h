@@ -45,11 +45,11 @@ private slots:
     void createTable(QString No);
     void insertRow(QString No, int row, QString state);
 
-    void on_pushButton_clicked();
     void on_pushButtonStart_clicked();
     void on_pushButtonPrev_clicked();
     void on_pushButtonNext_clicked();
     void on_pushButtonFile_clicked();
+    void on_pushButtonCmd_clicked();
 };
 
 #endif // W_HOME_H

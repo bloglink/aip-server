@@ -32,7 +32,7 @@
     </layout>
    </item>
    <item row="1" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <property name="spacing">
       <number>20</number>
      </property>
@@ -46,10 +46,34 @@
      <item>
       <widget class="QLineEdit" name="lineEditData"/>
      </item>
+    </layout>
+   </item>
+   <item row="2" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>20</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>发送文件</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEditFile"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonFile">
+       <property name="text">
+        <string>发送文件</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>发送数据</string>
+        <string>发送命令</string>
        </property>
       </widget>
      </item>
@@ -57,15 +81,15 @@
       <widget class="QLineEdit" name="lineEditSend"/>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="pushButtonCmd">
        <property name="text">
-        <string>发送</string>
+        <string>发送命令</string>
        </property>
       </widget>
      </item>
     </layout>
    </item>
-   <item row="2" column="0">
+   <item row="3" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <property name="spacing">
       <number>20</number>
@@ -74,13 +98,6 @@
       <widget class="QPushButton" name="pushButtonStart">
        <property name="text">
         <string>开始监听</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonFile">
-       <property name="text">
-        <string>测试发送文件</string>
        </property>
       </widget>
      </item>

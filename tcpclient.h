@@ -28,7 +28,7 @@ public:
 public:
     clientInfo Info;
 public slots:
-    void StartTransfer();    //开始传输文件
+    void StartTransfer(QString fileName);    //开始传输文件
     void SendMessage(quint8 type, QByteArray data);
 signals:
     void RcvData(int index, QByteArray data);
