@@ -20,9 +20,8 @@ tcpServer::tcpServer(QObject *parent) :
     int i;
 
     for (i=0; i<MAX_CLIENT; i++) {
-        tcpPool[i] = new tcpClient(this);
+        tcpPool[i] = new tcpClient(this,i);
         tcpPool[i]->Info.isFree = true;
-        tcpPool[i]->Info.ID = QString::number(i);
 
         connect(tcpPool[i], SIGNAL(RcvMessage(int,quint8,QByteArray)),
                 this, SIGNAL(ClientRcvMessage(int,quint8,QByteArray)));

@@ -20,7 +20,6 @@ struct clientInfo   //客户端信息
 {
     bool isFree;
     bool isInit;
-    QString ID;
     QString IP;
     QString NO;
     QString MAC;

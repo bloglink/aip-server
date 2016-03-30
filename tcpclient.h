@@ -11,7 +11,7 @@ class tcpClient : public QTcpSocket
 {
     Q_OBJECT
 public:
-    explicit tcpClient(QObject *parent = 0);
+    explicit tcpClient(QObject *parent = 0,int ClientIndex = 0);
 
 public:
     clientInfo Info;
@@ -24,6 +24,7 @@ signals:
     void RcvMessage(int index, quint8 type, QByteArray data);
     void ClientDisConnect(int index);
 private:
+    int index;
     int heart;
     QFile *file;
 

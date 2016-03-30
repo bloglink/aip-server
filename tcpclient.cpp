@@ -14,9 +14,10 @@
   * date:       2016.03.22
   * brief:      客户端
 ******************************************************************************/
-tcpClient::tcpClient(QObject *parent) :
+tcpClient::tcpClient(QObject *parent,int ClientIndex) :
     QTcpSocket(parent)
 {
+    index        = ClientIndex;
     heart        = 0;
     loadSize     = 4*1024;
     blockSize    = 0;
@@ -54,7 +55,7 @@ void tcpClient::ReadData()
 
         in >> type >> data;
 
-        emit RcvMessage(Info.ID.toInt(), type ,data);
+        emit RcvMessage(index, type ,data);
 
         blockSize = 0;
     }
@@ -169,5 +170,5 @@ void tcpClient::HeartClear()
 ******************************************************************************/
 void tcpClient::DisConnect()
 {
-    emit ClientDisConnect(Info.ID.toInt());
+    emit ClientDisConnect(index);
 }
