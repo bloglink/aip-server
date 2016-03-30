@@ -90,14 +90,20 @@ void tcpClient::SendMessage(quint8 type, QByteArray data)
 void tcpClient::StartTransfer(QString fileName)
 {
     QByteArray msg;
+    QByteArray md5;
 
     file = new QFile(fileName);
     if (!file->open(QFile::ReadOnly)) {
         qDebug() << "open file error!";
         return;
     }
+    md5 = QCryptographicHash::hash(file->readAll(),QCryptographicHash::Md5);
+    this->SendMessage(send_type_md5, md5);
+
+    file->seek(0);
 
     totalBytes = file->size();
+    msg.clear();
     msg.append(QString::number(totalBytes));
     this->SendMessage(send_type_size, msg);
 
@@ -144,11 +150,13 @@ void tcpClient::updateClientProgress(qint64 numBytes)
 ******************************************************************************/
 void tcpClient::HeartBeat()
 {
-    heart++;
-    SendMessage(send_type_heart,0);
+    if (heart == 0) {
+        heart++;
+        SendMessage(send_type_heart,0);
+        return;
+    }
     if (heart >= 10) {
         heart = 0;
-        qDebug("disconnect");
         disconnectFromHost();
     }
 }

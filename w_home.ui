@@ -61,7 +61,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEditFile"/>
+      <widget class="QLineEdit" name="lineEditFile">
+       <property name="text">
+        <string>/home/link/001.cpp</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pushButtonFile">

@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QTcpSocket>
 #include <QDataStream>
+#include <QCryptographicHash>
 
 #include "my_define.h"
 

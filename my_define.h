@@ -53,6 +53,7 @@ const quint8 send_type_msg      = 0x55;
 const quint8 send_type_file     = 0x56;
 const quint8 send_type_name     = 0x58;
 const quint8 send_type_size     = 0x59;
+const quint8 send_type_md5      = 0x5a;
 const quint8 send_type_file_end = 0x57;
 
 const quint8 send_type_reboot   = 0x00;
