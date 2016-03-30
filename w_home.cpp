@@ -89,7 +89,7 @@ void w_Home::system()
     int index;
     if (sysStep%100 == 0) {
         for (i=0; i<server->ClientCount; i++) {
-            index = server->ClientID[i];
+            index = server->ClientIndex[i];
             server->tcpPool[index]->HeartBeat();
         }
     }
@@ -173,6 +173,7 @@ void w_Home::ClientRcvMessage(int index, quint8 type, QByteArray data)
 void w_Home::updateShow()
 {
     int i;
+    int index;
     int row = server->ClientCount;
     if (row > W_ROW)
         row = W_ROW;
@@ -181,12 +182,13 @@ void w_Home::updateShow()
         pItem[i]->setText("");
 
     for (i=0; i<row; i++) {
-        pItem[i*W_COL+0]->setText(server->ClientList[i+page*W_ROW]->Info.ID);
-        pItem[i*W_COL+1]->setText(server->ClientList[i+page*W_ROW]->Info.IP);
-        pItem[i*W_COL+2]->setText(server->ClientList[i+page*W_ROW]->Info.NO);
-        pItem[i*W_COL+3]->setText(server->ClientList[i+page*W_ROW]->Info.MAC);
-        pItem[i*W_COL+4]->setText(server->ClientList[i+page*W_ROW]->Info.TIME);
-        pItem[i*W_COL+5]->setText(server->ClientList[i+page*W_ROW]->Info.VERSION);
+        index = server->ClientIndex[i+page*W_ROW];
+        pItem[i*W_COL+0]->setText(QString::number(index));
+        pItem[i*W_COL+1]->setText(server->tcpPool[index]->Info.IP);
+        pItem[i*W_COL+2]->setText(server->tcpPool[index]->Info.NO);
+        pItem[i*W_COL+3]->setText(server->tcpPool[index]->Info.MAC);
+        pItem[i*W_COL+4]->setText(server->tcpPool[index]->Info.TIME);
+        pItem[i*W_COL+5]->setText(server->tcpPool[index]->Info.VERSION);
     }
 }
 
@@ -342,7 +344,7 @@ void w_Home::on_pushButtonFile_clicked()
         return;
     QString fileName = ui->lineEditFile->text();
 
-    int index = server->ClientList[ret+page*W_ROW]->Info.ID.toInt();
+    int index = server->ClientIndex[ret+page*W_ROW];
 
 
     server->tcpPool[index]->StartTransfer(fileName);
@@ -362,7 +364,7 @@ void w_Home::on_pushButtonCmd_clicked()
     if (ret < 0)
         return;
 
-    int index = server->ClientList[ret+page*W_ROW]->Info.ID.toInt();
+    int index = server->ClientIndex[ret+page*W_ROW];
 
     quint8 type = (quint8)ui->lineEditSend->text().toInt();
     server->tcpPool[index]->SendMessage(type,0);

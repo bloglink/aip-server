@@ -18,8 +18,7 @@ signals:
     void ClientRcvMessage(int index, quint8 type, QByteArray data);
 public:
     int ClientCount;
-    QList<int> ClientID;
-    QList<tcpClient *> ClientList;
+    QList<int> ClientIndex;
     tcpClient *tcpPool[MAX_CLIENT];
 public slots:
     void CloseAllClient();

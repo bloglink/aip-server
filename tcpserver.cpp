@@ -54,8 +54,7 @@ void tcpServer::incomingConnection(int handle)
     }
     tcpPool[i]->Info.TIME = QTime::currentTime().toString();
     tcpPool[i]->Info.isInit = false;
-    ClientList.append(tcpPool[i]);
-    ClientID.append(i);
+    ClientIndex.append(i);
     ClientCount++;
 
     emit ClientConnected(i);
@@ -70,9 +69,8 @@ void tcpServer::DisConnect(int index)
 {
     int i;
     for (i=0; i<ClientCount; i++) {
-        if (ClientID[i] == index) {
-            ClientID.removeAt(i);
-            ClientList.removeAt(i);
+        if (ClientIndex[i] == index) {
+            ClientIndex.removeAt(i);
             ClientCount--;
             i--;
             emit ClientDisconnect(index);
@@ -89,8 +87,10 @@ void tcpServer::DisConnect(int index)
 void tcpServer::CloseAllClient()
 {
     int i;
+    int index;
     for (i=0; i<ClientCount; i++) {
-        ClientList[i]->close();
+        index = ClientIndex[i];
+        tcpPool[index]->close();
         i--;
     }
 }
