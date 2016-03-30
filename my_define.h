@@ -8,8 +8,6 @@
 #define W_ROW 50
 #define W_COL 6
 
-#define MAX_CLIENT 1000
-
 struct openFileStruct
 {
     QString filePath;
@@ -28,26 +26,36 @@ struct clientInfo   //客户端信息
     QString VERSION;
     QString PARAM;
 };
+const quint16 max_client   = 1000;
 
-const quint8 send_msg           = 0x00;
+const quint64 query_ip      = 1000;
+const quint64 query_num     = 1001;
+const quint64 query_mac     = 1002;
+const quint64 query_version = 1003;
+const quint64 query_date    = 1004;
+const quint64 query_time    = 1005;
+const quint64 query_stata   = 1006;
+const quint64 query_config  = 1007;
 
-const quint8 sys_reboot         = 0x01;
-const quint8 sys_heart          = 0x02;
-const quint8 sys_date           = 0x03;
-const quint8 sys_time           = 0x04;
-const quint8 sys_ip             = 0x05;
-const quint8 sys_num            = 0x06;
-const quint8 sys_mac            = 0x07;
-const quint8 sys_version        = 0x08;
-const quint8 sys_state          = 0x09;
-const quint8 sys_config         = 0x10;
-const quint8 sys_result         = 0x11;
+const quint64 reply_ip      = 2000;
+const quint64 reply_num     = 2001;
+const quint64 reply_mac     = 2002;
+const quint64 reply_version = 2003;
+const quint64 reply_date    = 2004;
+const quint64 reply_time    = 2005;
+const quint64 reply_state   = 2006;
+const quint64 reply_config  = 2007;
 
-//const quint8 set_data;
-//const quint8 set_time;
-//const quint8 set_num;
-//const quint8 set_net;
-//const quint8 set_config;
+const quint64 send_file     = 4000;
+const quint64 send_name     = 4001;
+const quint64 send_size     = 4002;
+const quint64 send_md5      = 4003;
+const quint64 send_data     = 4004;
+const quint64 send_time     = 4005;
+const quint64 send_state    = 4006;
+const quint64 send_config   = 4007;
+const quint64 send_list     = 4008;
+const quint64 send_heart    = 4009;
 
 const quint8 send_type_msg      = 0x55;
 const quint8 send_type_file     = 0x56;

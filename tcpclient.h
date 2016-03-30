@@ -17,12 +17,12 @@ public:
 public:
     clientInfo Info;
 public slots:
-    void SendMessage(quint8 type, QByteArray data);
+    void SendMessage(quint64 type, quint64 origin, QByteArray data);
     void StartTransfer(QString fileName);
     void HeartBeat();
     void HeartClear();
 signals:
-    void RcvMessage(int index, quint8 type, QByteArray data);
+    void RcvMessage(int index, quint64 type, quint64 target, QByteArray data);
     void ClientDisConnect(int index);
 private:
     int index;

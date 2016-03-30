@@ -38,7 +38,8 @@ tcpClient::tcpClient(QObject *parent,int ClientIndex) :
 ******************************************************************************/
 void tcpClient::ReadData()
 {
-    quint8 type;
+    qint64 type;
+    qint64 target;
     QByteArray data;
     QDataStream in(this);
     in.setVersion(QDataStream::Qt_4_8);
@@ -53,9 +54,9 @@ void tcpClient::ReadData()
         if (this->bytesAvailable() < blockSize)
             return;
 
-        in >> type >> data;
+        in >> type >> target >> data;
 
-        emit RcvMessage(index, type ,data);
+        emit RcvMessage(index, type ,target, data);
 
         blockSize = 0;
     }
@@ -66,14 +67,14 @@ void tcpClient::ReadData()
   * date:       2016.03.29
   * brief:      发送消息
 ******************************************************************************/
-void tcpClient::SendMessage(quint8 type, QByteArray data)
+void tcpClient::SendMessage(quint64 type, quint64 origin, QByteArray data)
 {
     int ret;
     QByteArray msg;
     QDataStream out(&msg,QIODevice::ReadWrite);
 
     out.setVersion(QDataStream::Qt_4_8);
-    out<<(qint64)0 << (quint8)type << data;
+    out<<(qint64)0 << (quint64)type << (quint64)origin << data;
     out.device()->seek(0);
     out<<(qint64)(msg.size()-sizeof(qint64));
 
@@ -98,21 +99,21 @@ void tcpClient::StartTransfer(QString fileName)
         return;
     }
     md5 = QCryptographicHash::hash(file->readAll(),QCryptographicHash::Md5);
-    this->SendMessage(send_type_md5, md5);
+    this->SendMessage(send_md5, (quint64)max_client, md5);
 
     file->seek(0);
 
     totalBytes = file->size();
     msg.clear();
     msg.append(QString::number(totalBytes));
-    this->SendMessage(send_type_size, msg);
+    this->SendMessage(send_size, (quint64)max_client, msg);
 
     QString currentFileName = fileName.right(fileName.size()
                                              - fileName.lastIndexOf('/')-1);
     msg.clear();
     msg.append(currentFileName.toUtf8());
 
-    this->SendMessage(send_type_name, msg);
+    this->SendMessage(send_name, (quint64)max_client, msg);
 
     bytesToWrite = totalBytes;
     bytesWritten = 0;
@@ -134,7 +135,7 @@ void tcpClient::updateClientProgress(qint64 numBytes)
 
     msg = file->read(loadSize);
 
-    this->SendMessage(send_type_file, msg);
+    this->SendMessage(send_file, (quint64)max_client, msg);
 
     bytesToWrite -= (int)qMin(bytesToWrite,loadSize);
 
@@ -152,7 +153,7 @@ void tcpClient::HeartBeat()
 {
     if (heart == 0) {
         heart++;
-        SendMessage(send_type_heart,0);
+        SendMessage(send_heart,(quint64)max_client,0);
         return;
     }
     if (heart >= 10) {

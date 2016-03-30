@@ -15,11 +15,11 @@ public:
 signals:
     void ClientConnected(int index);
     void ClientDisconnect(int index);
-    void ClientRcvMessage(int index, quint8 type, QByteArray data);
+    void ClientRcvMessage(int index, quint64 type, quint64 target, QByteArray data);
 public:
     int ClientCount;
     QList<int> ClientIndex;
-    tcpClient *tcpPool[MAX_CLIENT];
+    tcpClient *tcpPool[max_client];
 public slots:
     void CloseAllClient();
 protected:

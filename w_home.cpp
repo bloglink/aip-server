@@ -74,8 +74,8 @@ void w_Home::system()
         break;
     case 1:
         server = new tcpServer(this);
-        connect(server,SIGNAL(ClientRcvMessage(int,quint8,QByteArray)),
-                this,SLOT(ClientRcvMessage(int,quint8,QByteArray)));
+        connect(server,SIGNAL(ClientRcvMessage(int,quint64,quint64,QByteArray)),
+                this,SLOT(ClientRcvMessage(int,quint64,quint64,QByteArray)));
         connect(server,SIGNAL(ClientDisconnect(int)),
                 this,SLOT(ClientDisconnect(int)));
         connect(server,SIGNAL(ClientConnected(int)),this,SLOT(ClientConnected(int)));
@@ -102,12 +102,12 @@ void w_Home::system()
 ******************************************************************************/
 void w_Home::ClientConnected(int index)
 {
-    server->tcpPool[index]->SendMessage(send_type_ip,0);
-    server->tcpPool[index]->SendMessage(send_type_No,0);
-    server->tcpPool[index]->SendMessage(send_type_mac,0);
-    server->tcpPool[index]->SendMessage(send_type_version,0);
+    qDebug()<<"上线"<<QTime::currentTime().toString();
+    server->tcpPool[index]->SendMessage(query_ip,(quint64)max_client,0);
+    server->tcpPool[index]->SendMessage(query_num,(quint64)max_client,0);
+    server->tcpPool[index]->SendMessage(query_mac,(quint64)max_client,0);
+    server->tcpPool[index]->SendMessage(query_version,(quint64)max_client,0);
     updateShow();
-    qDebug()<<"连接";
 }
 /******************************************************************************
   * version:    1.0
@@ -117,11 +117,8 @@ void w_Home::ClientConnected(int index)
 ******************************************************************************/
 void w_Home::ClientDisconnect(int index)
 {
-    server->tcpPool[index]->Info.isInit = false;
-    server->tcpPool[index]->Info.isFree = true;
-    if (server->tcpPool[index]->Info.isInit)
-        newRecord(index, state_lower);
-    updateShow();
+    qDebug()<<"下线"<<QTime::currentTime().toString();
+    newRecord(index, state_lower);
 }
 /******************************************************************************
   * version:    1.0
@@ -129,32 +126,34 @@ void w_Home::ClientDisconnect(int index)
   * date:       2016.03.24
   * brief:      接收数据
 ******************************************************************************/
-void w_Home::ClientRcvMessage(int index, quint8 type, QByteArray data)
+void w_Home::ClientRcvMessage(int index, quint64 type, quint64 target, QByteArray data)
 {
+    if (target != max_client)
+        return;
     switch (type) {
-    case reply_type_ip:
+    case reply_ip:
         server->tcpPool[index]->Info.IP = data;
         break;
-    case reply_type_No:
+    case reply_num:
         server->tcpPool[index]->Info.NO = data;
         break;
-    case reply_type_mac:
+    case reply_mac:
         server->tcpPool[index]->Info.MAC = data;
         break;
-    case reply_type_version:
+    case reply_version:
         server->tcpPool[index]->Info.VERSION = data;
         newRecord(index, state_upper);
         break;
     case reply_type_test:
         newRecord(index, state_test);
         break;
-    case reply_type_heart:
+    case send_heart:
         server->tcpPool[index]->HeartClear();
         return;
         break;
-    case reply_type_state:
+    case reply_state:
         break;
-    case reply_type_config:
+    case reply_config:
         server->tcpPool[index]->Info.PARAM = data;
         newRecord(index, state_config);
         break;
@@ -207,19 +206,15 @@ void w_Home::newRecord(int index,int state)
         if (server->tcpPool[index]->Info.isInit == false) {
             insertRow(server->tcpPool[index]->Info.NO,index,"上线");
             server->tcpPool[index]->Info.isInit = true;
-            qDebug()<<"上线";
-            qDebug()<<QTime::currentTime().toString();
         }
         break;
     case state_lower:
         if (server->tcpPool[index]->Info.isInit) {
-            server->tcpPool[index]->Info.isInit = false;
-            server->tcpPool[index]->Info.isFree = true;
             insertRow(server->tcpPool[index]->Info.NO,index,"下线");
             updateShow();
-            qDebug()<<"下线";
-            qDebug()<<QTime::currentTime().toString();
         }
+        server->tcpPool[index]->Info.isInit = false;
+        server->tcpPool[index]->Info.isFree = true;
         break;
     case state_error:
         insertRow(server->tcpPool[index]->Info.NO,index,"错误");
@@ -366,6 +361,6 @@ void w_Home::on_pushButtonCmd_clicked()
 
     int index = server->ClientIndex[ret+page*W_ROW];
 
-    quint8 type = (quint8)ui->lineEditSend->text().toInt();
-    server->tcpPool[index]->SendMessage(type,0);
+    quint64 type = (quint64)ui->lineEditSend->text().toInt();
+    server->tcpPool[index]->SendMessage(type,(quint64)max_client,0);
 }

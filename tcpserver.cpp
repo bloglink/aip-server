@@ -19,12 +19,12 @@ tcpServer::tcpServer(QObject *parent) :
 {
     int i;
 
-    for (i=0; i<MAX_CLIENT; i++) {
+    for (i=0; i<max_client; i++) {
         tcpPool[i] = new tcpClient(this,i);
         tcpPool[i]->Info.isFree = true;
 
-        connect(tcpPool[i], SIGNAL(RcvMessage(int,quint8,QByteArray)),
-                this, SIGNAL(ClientRcvMessage(int,quint8,QByteArray)));
+        connect(tcpPool[i], SIGNAL(RcvMessage(int,quint64,quint64,QByteArray)),
+                this, SIGNAL(ClientRcvMessage(int,quint64,quint64,QByteArray)));
         connect(tcpPool[i], SIGNAL(ClientDisConnect(int)),
                 this, SLOT(DisConnect(int)));
     }
@@ -40,7 +40,7 @@ void tcpServer::incomingConnection(int handle)
 {
     int i;
 
-    for (i=0; i<MAX_CLIENT; i++) {
+    for (i=0; i<max_client; i++) {
         if (tcpPool[i]->Info.isFree == true) {
             tcpPool[i]->Info.isFree =false;
             break;
