@@ -1,47 +1,28 @@
 服务器命令格式
 
-|名称|功能码/quint8|宏定义/const quint8|数据/QByteArray|备注|
-|:------|:------------------:|:--------|:---:|:-:|
-|重启|0x00|send_type_reboot|X|
-|-
-|获取IP地址|0x01|send_type_ip|X|
-|获取出厂编号|0x02|send_type_No|X|
-|获取MAC地址|0x03|send_type_mac|X|
-|获取版本|0x04|send_type_version|X|
-|发送心跳|0x05|send_type_heart|X|
-|-|
-|启动测试|0x10|send_type_test|X|
-|获取状态|0x11|send_type_state|X|
-|获取配置|0x12|send_type_config|X|
-|开启结果上传|0x13|send_type_network|X|
-|关闭结果上传|0x13|send_type_network|X|
-|-
-|发送文件|0x56|send_type_file|X|
-|发送文件大小|0x59|send_type_file|X|
-|发送文件名称|0x58|send_type_file|X|
-
-二代机应答格式
-
-|名称|功能码/quint8|宏定义/const quint8|数据/QByteArray|备注|
-|:------|:------------------:|:--------|:----:|:----:|
-|回传IP地址|0x81|reply_type_ip|data|---|
-|回传出厂编号|0x82|reply_type_No|data|---|
-|回传MAC地址|0x83|reply_type_mac|data|---|
-|回传版本|0x84|reply_type_version|data|---|
-|回传心跳|0x85|reply_type_heart|data|---|
-|-
-|回传状态|0x90|reply_type_test|data|---|
-|回传状态|0x91|reply_type_state|data|---|
-|回传配置|0x92|reply_type_config|data|---|
-|回传结果|0x93|reply_type_result|data|---|
-
-客户端应答格式
-
-|名称|功能码/quint8|宏定义/const quint8|数据/QByteArray|备注|
-|:------|:------------------:|:--------|:----:|:----:|
-|回传IP地址|0x81|reply_type_ip|data|---|
-|回传出厂编号|0x82|reply_type_No|data|---|
-|回传MAC地址|0x83|reply_type_mac|data|---|
-|回传版本|0x84|reply_type_version|data|---|
-|回传心跳|0x85|reply_type_heart|data|---|
-
+|功能名称解释|字节数|功能码|宏定义        |目标编号|数据|备注|
+|----------|:---:|:---:|:------------|:----:|:--:|:-:|
+|获取出厂编号|block|1001 |query_num    |X|X||
+|获取硬件地址|block|1002 |query_mac    |X|X||
+|获取软件版本|block|1003 |query_version|X|X||
+|获取目标日期|block|1004 |query_date   |X|X||
+|获取目标时间|block|1005 |query_time   |X|X||
+|获取目标状态|block|1006 |query_state  |X|X||
+|获取目标配置|block|1007 |query_config |X|X||
+|
+|发送出厂编号|block|2001 |send_num     |X|data||
+|发送硬件地址|block|2002 |send_mac     |X|data||
+|发送软件版本|block|2003 |send_version |X|data||
+|发送目标日期|block|2004 |send_date    |X|data||
+|发送目标时间|block|2005 |send_time    |X|data||
+|发送目标状态|block|2006 |send_state   |X|data||
+|发送目标配置|block|2007 |send_config  |X|data||
+|发送文件数据|block|4000 |send_file    |X|data||
+|发送文件名称|block|4001 |send_name    |X|data||
+|发送文件大小|block|4002 |send_size    |X|data||
+|发送校验数据|block|4003 |send_verify  |X|data||
+|发送定时心跳|block|4009 |send_heart   |X|X||
+|发送测试启动|block|4010 |send_test    |X|X||
+|发送错误信息|block|4011 |send_error   |X|data||
+|开启结果上传|block|4013 |send_network |X|X||
+|关闭结果上传|block|4013 |send_network |X|X|||

@@ -48,10 +48,11 @@ void tcpServer::incomingConnection(int handle)
     }
 
     if (!tcpPool[i]->setSocketDescriptor(handle)) {
-        qDebug()<<tcpPool[i]->error();
+        qDebug() << "initialize error!" << tcpPool[i]->errorString();
         return;
     }
-    tcpPool[i]->Info.TIME = QTime::currentTime().toString();
+    tcpPool[i]->Info.Time = QTime::currentTime().toString();
+    tcpPool[i]->Info.Address   = tcpPool[i]->peerAddress().toString();
     tcpPool[i]->Info.isInit = false;
     ClientIndex.append(i);
     ClientCount++;

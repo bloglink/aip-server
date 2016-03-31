@@ -102,11 +102,13 @@ void w_Home::system()
 ******************************************************************************/
 void w_Home::ClientConnected(int index)
 {
-    qDebug()<<"上线"<<QTime::currentTime().toString();
-    server->tcpPool[index]->SendMessage(query_ip,(quint64)max_client,0);
-    server->tcpPool[index]->SendMessage(query_num,(quint64)max_client,0);
-    server->tcpPool[index]->SendMessage(query_mac,(quint64)max_client,0);
-    server->tcpPool[index]->SendMessage(query_version,(quint64)max_client,0);
+    qDebug() << server->tcpPool[index]->peerAddress().toString()
+             << "上线"
+             << QTime::currentTime().toString();
+
+    server->tcpPool[index]->SendMessage(query_mac,serverIndex,0);
+    server->tcpPool[index]->SendMessage(query_version,serverIndex,0);
+    server->tcpPool[index]->SendMessage(query_num,serverIndex,0);
     updateShow();
 }
 /******************************************************************************
@@ -117,8 +119,16 @@ void w_Home::ClientConnected(int index)
 ******************************************************************************/
 void w_Home::ClientDisconnect(int index)
 {
-    qDebug()<<"下线"<<QTime::currentTime().toString();
-    newRecord(index, state_lower);
+    qDebug() << server->tcpPool[index]->peerAddress()
+             << "下线"
+             << QTime::currentTime().toString();
+
+    if (server->tcpPool[index]->Info.isInit) {
+        insertRow(server->tcpPool[index]->Info.Number,index,"下线");
+        updateShow();
+    }
+    server->tcpPool[index]->Info.isInit = false;
+    server->tcpPool[index]->Info.isFree = true;
 }
 /******************************************************************************
   * version:    1.0
@@ -128,34 +138,46 @@ void w_Home::ClientDisconnect(int index)
 ******************************************************************************/
 void w_Home::ClientRcvMessage(int index, quint64 type, quint64 target, QByteArray data)
 {
-    if (target != max_client)
+    if (target != serverIndex) {
+        server->tcpPool[target]->SendMessage(type,index,data);
         return;
+    }
+
     switch (type) {
-    case reply_ip:
-        server->tcpPool[index]->Info.IP = data;
+    case send_num:
+        server->tcpPool[index]->Info.Number = data;
+        createTable(server->tcpPool[index]->Info.Number);
+        insertRow(server->tcpPool[index]->Info.Number,index,"上线");
+        server->tcpPool[index]->Info.isInit = true;
         break;
-    case reply_num:
-        server->tcpPool[index]->Info.NO = data;
+    case send_mac:
+        server->tcpPool[index]->Info.Hardware = data;
         break;
-    case reply_mac:
-        server->tcpPool[index]->Info.MAC = data;
+    case send_version:
+        server->tcpPool[index]->Info.Version = data;
         break;
-    case reply_version:
-        server->tcpPool[index]->Info.VERSION = data;
-        newRecord(index, state_upper);
+    case send_date:
         break;
-    case reply_type_test:
-        newRecord(index, state_test);
+    case send_time:
+        break;
+    case send_state:
+        break;
+    case send_config:
+        server->tcpPool[index]->Info.Param = data;
+        insertRow(server->tcpPool[index]->Info.Number,index,
+                  server->tcpPool[index]->Info.Param);
+        qDebug()<<"记录配置";
         break;
     case send_heart:
         server->tcpPool[index]->HeartClear();
         return;
-        break;
-    case reply_state:
-        break;
-    case reply_config:
-        server->tcpPool[index]->Info.PARAM = data;
-        newRecord(index, state_config);
+    case send_test:
+        insertRow(server->tcpPool[index]->Info.Number,index,"测试");
+        qDebug()<<"记录测试";
+        return;
+    case send_error:
+        insertRow(server->tcpPool[index]->Info.Number,index,"错误");
+        qDebug()<<"记录错误";
         break;
     default:
         break;
@@ -183,54 +205,11 @@ void w_Home::updateShow()
     for (i=0; i<row; i++) {
         index = server->ClientIndex[i+page*W_ROW];
         pItem[i*W_COL+0]->setText(QString::number(index));
-        pItem[i*W_COL+1]->setText(server->tcpPool[index]->Info.IP);
-        pItem[i*W_COL+2]->setText(server->tcpPool[index]->Info.NO);
-        pItem[i*W_COL+3]->setText(server->tcpPool[index]->Info.MAC);
-        pItem[i*W_COL+4]->setText(server->tcpPool[index]->Info.TIME);
-        pItem[i*W_COL+5]->setText(server->tcpPool[index]->Info.VERSION);
-    }
-}
-
-/******************************************************************************
-  * version:    1.0
-  * author:     link
-  * date:       2016.03.22
-  * brief:      新记录
-******************************************************************************/
-void w_Home::newRecord(int index,int state)
-{
-    createTable(server->tcpPool[index]->Info.NO);
-
-    switch (state) {
-    case state_upper:
-        if (server->tcpPool[index]->Info.isInit == false) {
-            insertRow(server->tcpPool[index]->Info.NO,index,"上线");
-            server->tcpPool[index]->Info.isInit = true;
-        }
-        break;
-    case state_lower:
-        if (server->tcpPool[index]->Info.isInit) {
-            insertRow(server->tcpPool[index]->Info.NO,index,"下线");
-            updateShow();
-        }
-        server->tcpPool[index]->Info.isInit = false;
-        server->tcpPool[index]->Info.isFree = true;
-        break;
-    case state_error:
-        insertRow(server->tcpPool[index]->Info.NO,index,"错误");
-        qDebug()<<"错误";
-        break;
-    case state_test:
-        insertRow(server->tcpPool[index]->Info.NO,index,"测试");
-        qDebug()<<"测试";
-        break;
-    case state_config:
-        insertRow(server->tcpPool[index]->Info.NO,index,
-                  server->tcpPool[index]->Info.PARAM);
-        qDebug()<<"更改配置";
-        break;
-    default:
-        break;
+        pItem[i*W_COL+1]->setText(server->tcpPool[index]->Info.Address);
+        pItem[i*W_COL+2]->setText(server->tcpPool[index]->Info.Number);
+        pItem[i*W_COL+3]->setText(server->tcpPool[index]->Info.Hardware);
+        pItem[i*W_COL+4]->setText(server->tcpPool[index]->Info.Time);
+        pItem[i*W_COL+5]->setText(server->tcpPool[index]->Info.Version);
     }
 }
 /******************************************************************************
@@ -270,12 +249,12 @@ void w_Home::insertRow(QString No ,int index, QString state)
     QSqlQuery query(sql.db);
     query.prepare(str);
     query.bindValue(":ID",sql.MaxID(No)+1);
-    query.bindValue(":IP",server->tcpPool[index]->Info.IP);
-    query.bindValue(":NO",server->tcpPool[index]->Info.NO);
-    query.bindValue(":MAC",server->tcpPool[index]->Info.MAC);
+    query.bindValue(":IP",server->tcpPool[index]->Info.Address);
+    query.bindValue(":NO",server->tcpPool[index]->Info.Number);
+    query.bindValue(":MAC",server->tcpPool[index]->Info.Hardware);
     query.bindValue(":TIME",QTime::currentTime().toString());
     query.bindValue(":STATE",state);
-    query.bindValue(":VERSION",server->tcpPool[index]->Info.VERSION);
+    query.bindValue(":VERSION",server->tcpPool[index]->Info.Version);
     query.exec();
 }
 /******************************************************************************

@@ -71,7 +71,7 @@ void tcpClient::SendMessage(quint64 type, quint64 origin, QByteArray data)
 {
     int ret;
     QByteArray msg;
-    QDataStream out(&msg,QIODevice::ReadWrite);
+    QDataStream out(&msg, QIODevice::ReadWrite);
 
     out.setVersion(QDataStream::Qt_4_8);
     out<<(qint64)0 << (quint64)type << (quint64)origin << data;
@@ -80,7 +80,7 @@ void tcpClient::SendMessage(quint64 type, quint64 origin, QByteArray data)
 
     ret = this->writeData(msg, msg.size());
     if (ret == -1)
-        qDebug()<<this->errorString();
+        qDebug() << "write data error!" << this->errorString();
 }
 /******************************************************************************
   * version:    1.0
@@ -88,18 +88,17 @@ void tcpClient::SendMessage(quint64 type, quint64 origin, QByteArray data)
   * date:       2016.03.29
   * brief:      准备发送文件
 ******************************************************************************/
-void tcpClient::StartTransfer(QString fileName)
+void tcpClient::StartTransfer(QString name)
 {
     QByteArray msg;
-    QByteArray md5;
 
-    file = new QFile(fileName);
+    file = new QFile(name);
     if (!file->open(QFile::ReadOnly)) {
-        qDebug() << "open file error!";
+        qDebug() << "open file error!" << file->errorString();
         return;
     }
-    md5 = QCryptographicHash::hash(file->readAll(),QCryptographicHash::Md5);
-    this->SendMessage(send_md5, (quint64)max_client, md5);
+    msg = QCryptographicHash::hash(file->readAll(),QCryptographicHash::Md5);
+    this->SendMessage(send_md5, (quint64)max_client, msg);
 
     file->seek(0);
 
@@ -108,10 +107,9 @@ void tcpClient::StartTransfer(QString fileName)
     msg.append(QString::number(totalBytes));
     this->SendMessage(send_size, (quint64)max_client, msg);
 
-    QString currentFileName = fileName.right(fileName.size()
-                                             - fileName.lastIndexOf('/')-1);
+    QString currentName = name.right(name.size()- name.lastIndexOf('/')-1);
     msg.clear();
-    msg.append(currentFileName.toUtf8());
+    msg.append(currentName.toUtf8());
 
     this->SendMessage(send_name, (quint64)max_client, msg);
 

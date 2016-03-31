@@ -41,7 +41,6 @@ private slots:
     void ClientConnected(int index);
     void ClientDisconnect(int index);
     void ClientRcvMessage(int index, quint64 type, quint64 target, QByteArray data);
-    void newRecord(int index,int state);
     void createTable(QString No);
     void insertRow(QString No, int row, QString state);
 
