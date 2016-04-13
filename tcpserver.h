@@ -17,7 +17,6 @@ signals:
     void ClientDisconnect(int index);
     void ClientRcvMessage(int index, quint64 type, quint64 target, QByteArray data);
 public:
-    int ClientCount;
     QList<int> ClientIndex;
     tcpClient *tcpPool[max_client];
 public slots:
@@ -26,6 +25,10 @@ protected:
     void incomingConnection(int handle);
 private slots:
     void DisConnect(int index);
+private:
+    int pos;
+    int index;
+    int currentIndex;
 };
 
 #endif // TCPSERVER_H

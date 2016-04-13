@@ -5,7 +5,7 @@
 
 #define DB_PATH "/home/link/aip-server-build/aip.db"
 
-#define W_ROW 50
+#define W_ROW 250
 #define W_COL 6
 
 struct openFileStruct
@@ -35,6 +35,7 @@ const quint64 query_date    = 1004;
 const quint64 query_time    = 1005;
 const quint64 query_stata   = 1006;
 const quint64 query_config  = 1007;
+const quint64 query_list    = 1008;
 
 const quint64 send_num      = 2001;
 const quint64 send_mac      = 2002;

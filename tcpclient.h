@@ -21,6 +21,7 @@ public slots:
     void StartTransfer(QString fileName);
     void HeartBeat();
     void HeartClear();
+    void displayError(QAbstractSocket::SocketError);
 signals:
     void RcvMessage(int index, quint64 type, quint64 target, QByteArray data);
     void ClientDisConnect(int index);
@@ -34,7 +35,7 @@ private:
     qint64 totalBytes;
     qint64 bytesToWrite;
     qint64 bytesWritten;
-    QByteArray outBlock;
+    QByteArray msg;
 
 private slots:
     void ReadData();

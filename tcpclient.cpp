@@ -29,6 +29,8 @@ tcpClient::tcpClient(QObject *parent,int ClientIndex) :
     connect(this, SIGNAL(disconnected()), this, SLOT(DisConnect()));
     connect(this, SIGNAL(bytesWritten(qint64)),
             this, SLOT(updateClientProgress(qint64)));
+    connect(this, SIGNAL(error(QAbstractSocket::SocketError)),
+            this,SLOT(displayError(QAbstractSocket::SocketError)));
 }
 /******************************************************************************
   * version:    1.0
@@ -40,7 +42,6 @@ void tcpClient::ReadData()
 {
     qint64 type;
     qint64 target;
-    QByteArray data;
     QDataStream in(this);
     in.setVersion(QDataStream::Qt_4_8);
 
@@ -51,12 +52,18 @@ void tcpClient::ReadData()
             in >> blockSize;
         }
 
+        if (blockSize > 32*1024) {
+            this->abort();
+            return;
+        }
+
         if (this->bytesAvailable() < blockSize)
             return;
 
-        in >> type >> target >> data;
+        msg.clear();
+        in >> type >> target >> msg;
 
-        emit RcvMessage(index, type ,target, data);
+        emit RcvMessage(index, type ,target, msg);
 
         blockSize = 0;
     }
@@ -70,7 +77,7 @@ void tcpClient::ReadData()
 void tcpClient::SendMessage(quint64 type, quint64 origin, QByteArray data)
 {
     int ret;
-    QByteArray msg;
+    msg.clear();
     QDataStream out(&msg, QIODevice::ReadWrite);
 
     out.setVersion(QDataStream::Qt_4_8);
@@ -78,6 +85,8 @@ void tcpClient::SendMessage(quint64 type, quint64 origin, QByteArray data)
     out.device()->seek(0);
     out<<(qint64)(msg.size()-sizeof(qint64));
 
+    if (this->state() != QAbstractSocket::ConnectedState)
+        return;
     ret = this->writeData(msg, msg.size());
     if (ret == -1)
         qDebug() << "write data error!" << this->errorString();
@@ -90,28 +99,27 @@ void tcpClient::SendMessage(quint64 type, quint64 origin, QByteArray data)
 ******************************************************************************/
 void tcpClient::StartTransfer(QString name)
 {
-    QByteArray msg;
-
     file = new QFile(name);
     if (!file->open(QFile::ReadOnly)) {
         qDebug() << "open file error!" << file->errorString();
         return;
     }
+    msg.clear();
     msg = QCryptographicHash::hash(file->readAll(),QCryptographicHash::Md5);
-    this->SendMessage(send_md5, (quint64)max_client, msg);
+    this->SendMessage(send_md5, serverIndex, msg);
 
     file->seek(0);
 
     totalBytes = file->size();
     msg.clear();
     msg.append(QString::number(totalBytes));
-    this->SendMessage(send_size, (quint64)max_client, msg);
+    this->SendMessage(send_size, serverIndex, msg);
 
     QString currentName = name.right(name.size()- name.lastIndexOf('/')-1);
     msg.clear();
     msg.append(currentName.toUtf8());
 
-    this->SendMessage(send_name, (quint64)max_client, msg);
+    this->SendMessage(send_name, serverIndex, msg);
 
     bytesToWrite = totalBytes;
     bytesWritten = 0;
@@ -127,13 +135,12 @@ void tcpClient::updateClientProgress(qint64 numBytes)
     if (bytesToWrite == 0)
         return;
 
-    QByteArray msg;
-
     bytesWritten += (int)numBytes;
 
+    msg.clear();
     msg = file->read(loadSize);
 
-    this->SendMessage(send_file, (quint64)max_client, msg);
+    this->SendMessage(send_file, serverIndex, msg);
 
     bytesToWrite -= (int)qMin(bytesToWrite,loadSize);
 
@@ -149,12 +156,12 @@ void tcpClient::updateClientProgress(qint64 numBytes)
 ******************************************************************************/
 void tcpClient::HeartBeat()
 {
-    if (heart == 0) {
-        heart++;
-        SendMessage(send_heart,(quint64)max_client,0);
-        return;
+    heart++;
+    if (heart >= 5 && (Info.isInit == false)) {
+        heart = 0;
+        disconnectFromHost();
     }
-    if (heart >= 10) {
+    if (heart >= 100) {
         heart = 0;
         disconnectFromHost();
     }
@@ -178,4 +185,14 @@ void tcpClient::HeartClear()
 void tcpClient::DisConnect()
 {
     emit ClientDisConnect(index);
+}
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2016.03.22
+  * brief:      输出错误信息
+******************************************************************************/
+void tcpClient::displayError(QAbstractSocket::SocketError)
+{
+    qDebug()<<this->errorString(); //输出错误信息
 }

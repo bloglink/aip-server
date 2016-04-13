@@ -21,6 +21,7 @@ w_Home::w_Home(QWidget *parent) :
 {
     int i;
     ui->setupUi(this);
+    ui->tableWidget->setCurrentCell(0,0);
 
     isServerOn = false;
     page = 0;
@@ -88,7 +89,7 @@ void w_Home::system()
     int i;
     int index;
     if (sysStep%100 == 0) {
-        for (i=0; i<server->ClientCount; i++) {
+        for (i=0; i<server->ClientIndex.size(); i++) {
             index = server->ClientIndex[i];
             server->tcpPool[index]->HeartBeat();
         }
@@ -102,14 +103,10 @@ void w_Home::system()
 ******************************************************************************/
 void w_Home::ClientConnected(int index)
 {
-    qDebug() << server->tcpPool[index]->peerAddress().toString()
-             << "上线"
+    qDebug() << "上线"<<index
+             << server->tcpPool[index]->peerAddress().toString()
              << QTime::currentTime().toString();
-
-    server->tcpPool[index]->SendMessage(query_mac,serverIndex,0);
-    server->tcpPool[index]->SendMessage(query_version,serverIndex,0);
-    server->tcpPool[index]->SendMessage(query_num,serverIndex,0);
-    updateShow();
+//    updateShow();
 }
 /******************************************************************************
   * version:    1.0
@@ -119,16 +116,21 @@ void w_Home::ClientConnected(int index)
 ******************************************************************************/
 void w_Home::ClientDisconnect(int index)
 {
-    qDebug() << server->tcpPool[index]->peerAddress()
-             << "下线"
+    qDebug() << "下线"<<index
+             << server->tcpPool[index]->peerAddress().toString()
              << QTime::currentTime().toString();
 
     if (server->tcpPool[index]->Info.isInit) {
         insertRow(server->tcpPool[index]->Info.Number,index,"下线");
-        updateShow();
+        server->tcpPool[index]->Info.Number.clear();
+        server->tcpPool[index]->Info.Version.clear();
+        server->tcpPool[index]->Info.Hardware.clear();
+        server->tcpPool[index]->Info.Param.clear();
+        qDebug()<<"init";
     }
     server->tcpPool[index]->Info.isInit = false;
     server->tcpPool[index]->Info.isFree = true;
+    updateShow();
 }
 /******************************************************************************
   * version:    1.0
@@ -138,10 +140,16 @@ void w_Home::ClientDisconnect(int index)
 ******************************************************************************/
 void w_Home::ClientRcvMessage(int index, quint64 type, quint64 target, QByteArray data)
 {
-    if (target != serverIndex) {
+    if (target < serverIndex) {
         server->tcpPool[target]->SendMessage(type,index,data);
         return;
     }
+    if (target > serverIndex) {
+        server->tcpPool[index]->abort();
+        return;
+    }
+
+    QByteArray msg;
 
     switch (type) {
     case send_num:
@@ -170,6 +178,7 @@ void w_Home::ClientRcvMessage(int index, quint64 type, quint64 target, QByteArra
         break;
     case send_heart:
         server->tcpPool[index]->HeartClear();
+        server->tcpPool[index]->SendMessage(send_heart,target,0);
         return;
     case send_test:
         insertRow(server->tcpPool[index]->Info.Number,index,"测试");
@@ -179,6 +188,10 @@ void w_Home::ClientRcvMessage(int index, quint64 type, quint64 target, QByteArra
         insertRow(server->tcpPool[index]->Info.Number,index,"错误");
         qDebug()<<"记录错误";
         break;
+    case query_list:
+        msg.append(SendList(data.toInt()));
+        server->tcpPool[index]->SendMessage(send_list,serverIndex,msg);
+        return;
     default:
         break;
     }
@@ -195,15 +208,10 @@ void w_Home::updateShow()
 {
     int i;
     int index;
-    int row = server->ClientCount;
-    if (row > W_ROW)
-        row = W_ROW;
+    QList<int> temp = server->ClientIndex.mid(page*W_ROW,W_ROW);
 
-    for(i=0; i<W_ROW*W_COL; i++)
-        pItem[i]->setText("");
-
-    for (i=0; i<row; i++) {
-        index = server->ClientIndex[i+page*W_ROW];
+    for (i=0; i<temp.size(); i++) {
+        index = temp[i];
         pItem[i*W_COL+0]->setText(QString::number(index));
         pItem[i*W_COL+1]->setText(server->tcpPool[index]->Info.Address);
         pItem[i*W_COL+2]->setText(server->tcpPool[index]->Info.Number);
@@ -211,6 +219,9 @@ void w_Home::updateShow()
         pItem[i*W_COL+4]->setText(server->tcpPool[index]->Info.Time);
         pItem[i*W_COL+5]->setText(server->tcpPool[index]->Info.Version);
     }
+    for(i=temp.size()*W_COL; i<W_ROW*W_COL; i++)
+        pItem[i]->setText("");
+
 }
 /******************************************************************************
   * version:    1.0
@@ -257,6 +268,25 @@ void w_Home::insertRow(QString No ,int index, QString state)
     query.bindValue(":VERSION",server->tcpPool[index]->Info.Version);
     query.exec();
 }
+QString w_Home::SendList(int p)
+{
+    int i;
+    int index;
+    QStringList str;
+    for (i=0; i<server->ClientIndex.size(); i++) {
+        if (i == W_ROW)
+            break;
+        index = server->ClientIndex[i] + p*W_ROW;
+        str.append(QString::number(index));
+        str.append(server->tcpPool[index]->Info.Address);
+        str.append(server->tcpPool[index]->Info.Number);
+        str.append(server->tcpPool[index]->Info.Hardware);
+        str.append(server->tcpPool[index]->Info.Time);
+        str.append(server->tcpPool[index]->Info.Version);
+    }
+    return str.join(" ");
+}
+
 /******************************************************************************
   * version:    1.0
   * author:     link
@@ -297,7 +327,7 @@ void w_Home::on_pushButtonPrev_clicked()
 ******************************************************************************/
 void w_Home::on_pushButtonNext_clicked()
 {
-    if (page < server->ClientCount/W_ROW) {
+    if ((page+1)*W_ROW < server->ClientIndex.size()) {
         page++;
         updateShow();
     }
@@ -341,5 +371,5 @@ void w_Home::on_pushButtonCmd_clicked()
     int index = server->ClientIndex[ret+page*W_ROW];
 
     quint64 type = (quint64)ui->lineEditSend->text().toInt();
-    server->tcpPool[index]->SendMessage(type,(quint64)max_client,0);
+    server->tcpPool[index]->SendMessage(type,serverIndex,0);
 }

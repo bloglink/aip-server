@@ -28,7 +28,7 @@ tcpServer::tcpServer(QObject *parent) :
         connect(tcpPool[i], SIGNAL(ClientDisConnect(int)),
                 this, SLOT(DisConnect(int)));
     }
-    ClientCount = 0;
+    currentIndex = 0;
 }
 /******************************************************************************
   * version:    1.0
@@ -40,24 +40,29 @@ void tcpServer::incomingConnection(int handle)
 {
     int i;
 
-    for (i=0; i<max_client; i++) {
+    for (i=currentIndex; i<max_client; i++) {
         if (tcpPool[i]->Info.isFree == true) {
-            tcpPool[i]->Info.isFree =false;
+            index = i;
             break;
         }
     }
+    currentIndex++;
+    if (currentIndex >= max_client)
+        currentIndex = 0;
 
-    if (!tcpPool[i]->setSocketDescriptor(handle)) {
-        qDebug() << "initialize error!" << tcpPool[i]->errorString();
+    if (!tcpPool[index]->setSocketDescriptor(handle)) {
+        qDebug() << "initialize error!" << tcpPool[index]->errorString();
         return;
     }
-    tcpPool[i]->Info.Time = QTime::currentTime().toString();
-    tcpPool[i]->Info.Address   = tcpPool[i]->peerAddress().toString();
-    tcpPool[i]->Info.isInit = false;
-    ClientIndex.append(i);
-    ClientCount++;
+    tcpPool[index]->HeartClear();
 
-    emit ClientConnected(i);
+    tcpPool[index]->Info.Time = QTime::currentTime().toString();
+    tcpPool[index]->Info.Address   = tcpPool[i]->peerAddress().toString();
+    tcpPool[index]->Info.isFree =false;
+    tcpPool[index]->Info.isInit = false;
+    ClientIndex.append(index);
+
+    emit ClientConnected(index);
 }
 /******************************************************************************
   * version:    1.0
@@ -68,10 +73,9 @@ void tcpServer::incomingConnection(int handle)
 void tcpServer::DisConnect(int index)
 {
     int i;
-    for (i=0; i<ClientCount; i++) {
+    for (i=0; i<ClientIndex.size(); i++) {
         if (ClientIndex[i] == index) {
             ClientIndex.removeAt(i);
-            ClientCount--;
             i--;
             emit ClientDisconnect(index);
             break;
@@ -88,7 +92,7 @@ void tcpServer::CloseAllClient()
 {
     int i;
     int index;
-    for (i=0; i<ClientCount; i++) {
+    for (i=0; i<ClientIndex.size(); i++) {
         index = ClientIndex[i];
         tcpPool[index]->close();
         i--;

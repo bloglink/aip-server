@@ -43,7 +43,7 @@ private slots:
     void ClientRcvMessage(int index, quint64 type, quint64 target, QByteArray data);
     void createTable(QString No);
     void insertRow(QString No, int row, QString state);
-
+    QString SendList(int p);
     void on_pushButtonStart_clicked();
     void on_pushButtonPrev_clicked();
     void on_pushButtonNext_clicked();
