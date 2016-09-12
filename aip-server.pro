@@ -13,19 +13,18 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-    tcpserver.cpp \
-    tcpclient.cpp \
-    w_home.cpp \
-    linux_sql.cpp
+    CWinServer.cpp \
+    TcpServer.cpp \
+    TcpSocket.cpp \
+    SqlServer.cpp
 
 HEADERS  += \
-    my_define.h \
-    tcpserver.h \
-    tcpclient.h \
-    w_home.h \
-    linux_sql.h
+    CWinServer.h \
+    TcpServer.h \
+    TcpSocket.h \
+    SqlServer.h
 
 RESOURCES +=
 
 FORMS += \
-    w_home.ui
+    CWinServer.ui

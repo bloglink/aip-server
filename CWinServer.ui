@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CWinServer</class>
+ <widget class="QWidget" name="CWinServer">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
+  <property name="windowTitle">
+   <string>青岛艾普智能仪器服务端V0.1by赵楠林</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTableWidget" name="tabTcp">
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <attribute name="horizontalHeaderHighlightSections">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="horizontalHeaderStretchLastSection">
+      <bool>true</bool>
+     </attribute>
+     <attribute name="verticalHeaderHighlightSections">
+      <bool>false</bool>
+     </attribute>
+     <column>
+      <property name="text">
+       <string>Port</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>IP地址</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>上线时间</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>出厂编号</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>MAC地址</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>软件版本</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="LayoutB">
+     <property name="spacing">
+      <number>20</number>
+     </property>
+     <item>
+      <widget class="QLineEdit" name="EditB">
+       <property name="acceptDrops">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="KeyFile">
+       <property name="text">
+        <string>发送文件</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="LayoutA">
+     <property name="spacing">
+      <number>20</number>
+     </property>
+     <item>
+      <widget class="QLineEdit" name="EditA">
+       <property name="acceptDrops">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="KeyCmd">
+       <property name="text">
+        <string>发送命令</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="LayoutC">
+     <property name="spacing">
+      <number>20</number>
+     </property>
+     <item>
+      <widget class="QLineEdit" name="EditC">
+       <property name="acceptDrops">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="KeyBegin">
+       <property name="text">
+        <string>开始监听</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
