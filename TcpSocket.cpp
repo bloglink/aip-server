@@ -226,7 +226,7 @@ void TcpSocket::ExcuteCmd(quint16 addr, quint16 cmd, QByteArray data)
         GetFileData(data);
         break;
     case HEART_BEAT://心跳
-        PutBlock(quint16(ADDR),quint16(HEART_BEAT),"NULL");
+        PutBlock(ADDR,HEART_BEAT,url.fragment().toUtf8());
         break;
     default:
         break;
@@ -272,11 +272,11 @@ void TcpSocket::ExcuteCmd(QUrl url)
         break;
     case HEART_BEAT://心跳
         HeartCount++;
-        if (HeartCount > 2)
+        if (HeartCount > 5)
             this->disconnectFromHost();
         break;
     default:
-        PutBlock(ADDR,fun,url.fragment().toUtf8());
+        PutBlock(url.userName().toInt(),fun,url.fragment(QUrl::FullyDecoded).toUtf8());
         break;
     }
 }

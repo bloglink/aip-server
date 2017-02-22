@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>二代服务器V0.3.0.1</string>
+   <string>二代服务器V0.3.0.2</string>
   </property>
   <layout class="QGridLayout" name="gridLayout" rowstretch="7,0,0,0,0,0,1" columnstretch="3,0,5,1">
    <item row="2" column="3">

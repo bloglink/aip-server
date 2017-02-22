@@ -19,3 +19,8 @@ version: 0.3.0.1
 author: link
 date: 2017-02-20
 correct the online devices display bug
+
+version: 0.3.0.2
+author: link
+date: 2017-02-22
+correct transmit address
