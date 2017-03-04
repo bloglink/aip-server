@@ -16,16 +16,16 @@ SOURCES += main.cpp\
     SqlServer.cpp \
     TcpServer.cpp \
     TcpSocket.cpp \
-    WebServer.cpp
+    WinServer.cpp
 
 HEADERS  += \
     SqlServer.h \
     TcpServer.h \
     TcpSocket.h \
-    WebServer.h
+    WinServer.h
 
 FORMS    += \
-    WebServer.ui
+    WinServer.ui
 
 RESOURCES += \
     image.qrc

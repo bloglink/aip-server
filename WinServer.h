@@ -1,5 +1,5 @@
-#ifndef WEBSERVER_H
-#define WEBSERVER_H
+#ifndef WINSERVER_H
+#define WINSERVER_H
 
 #include <QTimer>
 #include <QThread>
@@ -24,19 +24,19 @@
 const quint8 MaxThreads = 8;
 
 namespace Ui {
-class WebServer;
+class WinServer;
 }
 
-class WebServer : public QWidget
+class WinServer : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit WebServer(QWidget *parent = 0);
-    ~WebServer();
+    explicit WinServer(QWidget *parent = 0);
+    ~WinServer();
 
 private:
-    Ui::WebServer *ui;
+    Ui::WinServer *ui;
 
 signals:
     void TransformCmd(QUrl url);
@@ -81,4 +81,4 @@ private:
     QSqlTableModel *model;
 };
 
-#endif // WEBSERVER_H
+#endif // WINSERVER_H

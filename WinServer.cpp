@@ -1,14 +1,9 @@
-#include "WebServer.h"
-#include "ui_WebServer.h"
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.02.20
- * brief:       初始化
-******************************************************************************/
-WebServer::WebServer(QWidget *parent) :
+#include "WinServer.h"
+#include "ui_WinServer.h"
+
+WinServer::WinServer(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::WebServer)
+    ui(new Ui::WinServer)
 {
     ui->setupUi(this);
     tcpServer = NULL;
@@ -23,13 +18,8 @@ WebServer::WebServer(QWidget *parent) :
     connect(timer,SIGNAL(timeout()),this,SLOT(TcpKeepLive()));
     SockectCount = 0;
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.02.20
- * brief:       界面析构
-******************************************************************************/
-WebServer::~WebServer()
+
+WinServer::~WinServer()
 {
     for (int i=0; i<MaxThreads; i++) {
         Threads.at(i)->quit();
@@ -43,12 +33,13 @@ WebServer::~WebServer()
  * date:        2017.02.20
  * brief:       初始化界面和线程池
 ******************************************************************************/
-void WebServer::WinInit()
+void WinServer::WinInit()
 {
     for (int i=0; i<MaxThreads; i++) {
         Threads.append(new QThread(this));
         Threads.at(i)->start();
     }
+    this->setWindowTitle("二代服务器V0.3.0.3");
 }
 /******************************************************************************
  * version:     1.0
@@ -56,7 +47,7 @@ void WebServer::WinInit()
  * date:        2016.03.24
  * brief:       初始化按键
 ******************************************************************************/
-void WebServer::BtnInit()
+void WinServer::BtnInit()
 {
     connect(ui->TabServer,SIGNAL(clicked(QModelIndex)),this,SLOT(TcpDevSelect(QModelIndex)));
     connect(ui->TabFiles,SIGNAL(clicked(QModelIndex)),this,SLOT(ViewClick(QModelIndex)));
@@ -74,7 +65,7 @@ void WebServer::BtnInit()
  * date:        2016.03.24
  * brief:       数据初始化
 ******************************************************************************/
-void WebServer::DatInit()
+void WinServer::DatInit()
 {
     set = new QSettings(GLOBAL_SET,QSettings::IniFormat);
     set->setIniCodec("GB18030");
@@ -87,7 +78,7 @@ void WebServer::DatInit()
  * date:        2016.03.24
  * brief:       数据保存
 ******************************************************************************/
-void WebServer::DatSave()
+void WinServer::DatSave()
 {
     set->setValue("UserPort", ui->EditUserPort->text());
 }
@@ -97,7 +88,7 @@ void WebServer::DatSave()
  * date:        2016.03.24
  * brief:       初始化数据库
 ******************************************************************************/
-void WebServer::SqlInit()
+void WinServer::SqlInit()
 {
     QFile file(SQL);
     if (!file.exists()) {
@@ -143,7 +134,7 @@ void WebServer::SqlInit()
  * date:        2016.03.24
  * brief:       开始监听
 ******************************************************************************/
-void WebServer::TcpInit()
+void WinServer::TcpInit()
 {
     if (tcpServer == NULL) {
         tcpServer = new TcpServer(this);
@@ -165,7 +156,7 @@ void WebServer::TcpInit()
  * date:        2016.07.16
  * brief:       心跳
 ******************************************************************************/
-void WebServer::TcpKeepLive()
+void WinServer::TcpKeepLive()
 {
     QUrl url;
     url.setUserName(QString::number(ADDR));
@@ -179,7 +170,7 @@ void WebServer::TcpKeepLive()
  * date:        2017.01.12
  * brief:       选择设备
 ******************************************************************************/
-void WebServer::TcpDevSelect(QModelIndex index)
+void WinServer::TcpDevSelect(QModelIndex index)
 {
     int row = index.row();
     QString port = model->record(row).value("PORT").toString();
@@ -193,7 +184,7 @@ void WebServer::TcpDevSelect(QModelIndex index)
  * date:        2017.01.12
  * brief:       选择文件
 ******************************************************************************/
-void WebServer::ViewClick(QModelIndex)
+void WinServer::ViewClick(QModelIndex)
 {
     QString temp = ui->TabFiles->currentItem()->text(1);
     QString name = ui->TabFiles->currentItem()->text(0);
@@ -221,7 +212,7 @@ void WebServer::ViewClick(QModelIndex)
  * date:        2017.01.12
  * brief:       获取文件列表
 ******************************************************************************/
-void WebServer::GetGuestFiles()
+void WinServer::GetGuestFiles()
 {
     if (ui->EditClientPort->text().isEmpty())
         return;
@@ -243,7 +234,7 @@ void WebServer::GetGuestFiles()
  * date:        2017.01.12
  * brief:       获取文件
 ******************************************************************************/
-void WebServer::GetGuestFile()
+void WinServer::GetGuestFile()
 {
     if (ui->EditClientPort->text().isEmpty())
         return;
@@ -264,7 +255,7 @@ void WebServer::GetGuestFile()
  * date:        2017.01.12
  * brief:       发送文件
 ******************************************************************************/
-void WebServer::PutLocalFile()
+void WinServer::PutLocalFile()
 {
     if (ui->EditClientPort->text().isEmpty())
         return;
@@ -285,7 +276,7 @@ void WebServer::PutLocalFile()
  * date:        2017.01.12
  * brief:       发送命令
 ******************************************************************************/
-void WebServer::PutCommand()
+void WinServer::PutCommand()
 {
     if (ui->EditCommand->text().isEmpty())
         return;
@@ -305,7 +296,7 @@ void WebServer::PutCommand()
  * date:        2017.01.12
  * brief:       接收数据
 ******************************************************************************/
-void WebServer::ExcuteCmd(QUrl url)
+void WinServer::ExcuteCmd(QUrl url)
 {
     if (url.port() != ADDR) {
         emit TransformCmd(url);
@@ -345,7 +336,7 @@ void WebServer::ExcuteCmd(QUrl url)
  * date:        2017.01.18
  * brief:       新的连接
 ******************************************************************************/
-void WebServer::NewGuest(quint16 handle)
+void WinServer::NewGuest(quint16 handle)
 {
     TcpSocket *s = new TcpSocket;
     s->setSocketDescriptor(handle);
@@ -362,7 +353,7 @@ void WebServer::NewGuest(quint16 handle)
  * date:        2017.02.11
  * brief:       修正用户登录协议
 ******************************************************************************/
-void WebServer::Login(QUrl url)
+void WinServer::Login(QUrl url)
 {
     sql->InsertState(url);
 }
@@ -374,7 +365,7 @@ void WebServer::Login(QUrl url)
  * date:        2017.02.11
  * brief:       修正用户退出协议
 ******************************************************************************/
-void WebServer::Droped(QUrl url)
+void WinServer::Droped(QUrl url)
 {
     sql->InsertState(url);
 }
@@ -384,7 +375,7 @@ void WebServer::Droped(QUrl url)
  * date:        2017.01.12
  * brief:       用户显示
 ******************************************************************************/
-void WebServer::ShowText(QUrl url)
+void WinServer::ShowText(QUrl url)
 {
     QString temp = url.fragment(QUrl::FullyDecoded);
     ui->Text->setText(temp);
@@ -395,7 +386,7 @@ void WebServer::ShowText(QUrl url)
  * date:        2017.01.13
  * brief:       显示文件列表
 ******************************************************************************/
-void WebServer::ShowFiles(QUrl url)
+void WinServer::ShowFiles(QUrl url)
 {
     isList = false;
     QString temp = url.fragment(QUrl::FullyDecoded);
@@ -433,7 +424,7 @@ void WebServer::ShowFiles(QUrl url)
  * date:        2017.02.11
  * brief:       修正发送在线列表协议
 ******************************************************************************/
-void WebServer::PutDevices(QUrl url)
+void WinServer::PutDevices(QUrl url)
 {
     url.setPort(url.userName().toInt());
     url.setUserName(QString::number(ADDR));
@@ -459,7 +450,7 @@ void WebServer::PutDevices(QUrl url)
  * date:        2017.01.18
  * brief:       退出保存
 ******************************************************************************/
-void WebServer::hideEvent(QHideEvent *)
+void WinServer::hideEvent(QHideEvent *)
 {
     DatSave();
 }

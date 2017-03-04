@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>WebServer</class>
- <widget class="QWidget" name="WebServer">
+ <class>WinServer</class>
+ <widget class="QWidget" name="WinServer">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,9 +11,90 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>二代服务器V0.3.0.2</string>
+   <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout" rowstretch="7,0,0,0,0,0,1" columnstretch="3,0,5,1">
+   <item row="0" column="0" colspan="4">
+    <widget class="QTableView" name="TabServer">
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+    </widget>
+   </item>
+   <item row="1" column="0" rowspan="6">
+    <widget class="QTreeWidget" name="TabFiles">
+     <property name="showDropIndicator" stdset="0">
+      <bool>false</bool>
+     </property>
+     <column>
+      <property name="text">
+       <string>文件列表</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLabel" name="TextClientPort">
+     <property name="text">
+      <string>客户端口:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QLineEdit" name="EditClientPort">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>35</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="3">
+    <widget class="QPushButton" name="BtnGetFiles">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>获取文件列表*</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLabel" name="TextClientFile">
+     <property name="text">
+      <string>客户文件:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QLineEdit" name="EditClientFile">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>35</height>
+      </size>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="3">
     <widget class="QPushButton" name="BtnGetCurrentFile">
      <property name="sizePolicy">
@@ -27,23 +108,10 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="3">
-    <widget class="QPushButton" name="BtnPutCurrentFile">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
+   <item row="3" column="1">
+    <widget class="QLabel" name="TextLocalFile">
      <property name="text">
-      <string>发送本地文件*</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="QLabel" name="TextUserPort">
-     <property name="text">
-      <string>监听端口:</string>
+      <string>本机文件:</string>
      </property>
     </widget>
    </item>
@@ -66,52 +134,24 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="2">
-    <widget class="QLineEdit" name="EditClientPort">
+   <item row="3" column="3">
+    <widget class="QPushButton" name="BtnPutCurrentFile">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>35</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="3">
-    <widget class="QPushButton" name="BtnCommand">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
      <property name="text">
-      <string>发送系统命令*</string>
+      <string>发送本地文件*</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="QLabel" name="TextClientPort">
+   <item row="4" column="1">
+    <widget class="QLabel" name="TextCommand">
      <property name="text">
-      <string>客户端口:</string>
+      <string>系统命令:</string>
      </property>
-    </widget>
-   </item>
-   <item row="1" column="0" rowspan="6">
-    <widget class="QTreeWidget" name="TabFiles">
-     <property name="showDropIndicator" stdset="0">
-      <bool>false</bool>
-     </property>
-     <column>
-      <property name="text">
-       <string>文件列表</string>
-      </property>
-     </column>
     </widget>
    </item>
    <item row="4" column="2">
@@ -136,37 +176,8 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="3">
-    <widget class="QPushButton" name="BtnGetFiles">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>获取文件列表*</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="2">
-    <widget class="QLineEdit" name="EditClientFile">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>35</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="3" rowspan="2">
-    <widget class="QPushButton" name="BtnStartServer">
+   <item row="4" column="3">
+    <widget class="QPushButton" name="BtnCommand">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -174,18 +185,15 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>开始监听</string>
+      <string>发送系统命令*</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="0" colspan="4">
-    <widget class="QTableView" name="TabServer">
-     <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
+   <item row="5" column="1">
+    <widget class="QLabel" name="TextUserPort">
+     <property name="text">
+      <string>监听端口:</string>
      </property>
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
     </widget>
    </item>
    <item row="5" column="2">
@@ -207,29 +215,21 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
-    <widget class="QLabel" name="TextCommand">
+   <item row="5" column="3" rowspan="2">
+    <widget class="QPushButton" name="BtnStartServer">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
-      <string>系统命令:</string>
+      <string>开始监听</string>
      </property>
     </widget>
    </item>
    <item row="6" column="1" colspan="2">
     <widget class="QTextBrowser" name="Text"/>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLabel" name="TextLocalFile">
-     <property name="text">
-      <string>本机文件:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLabel" name="TextClientFile">
-     <property name="text">
-      <string>客户文件:</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>

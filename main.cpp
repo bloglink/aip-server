@@ -1,4 +1,4 @@
-#include "WebServer.h"
+#include "WinServer.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     qss = QLatin1String(file.readAll());
     qApp->setStyleSheet(qss);
 
-    WebServer w;
+    WinServer w;
     w.show();
     w.resize(1024,768);
 
