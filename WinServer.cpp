@@ -39,7 +39,8 @@ void WinServer::WinInit()
         Threads.append(new QThread(this));
         Threads.at(i)->start();
     }
-    this->setWindowTitle("二代服务器V0.3.0.3");
+    this->setWindowTitle("二代服务器V-0.3.0.3");
+    qRegisterMetaType<TcpMap>("TcpMap");
 }
 /******************************************************************************
  * version:     1.0
@@ -125,7 +126,12 @@ void WinServer::SqlInit()
     ui->TabServer->horizontalHeader()->setSectionResizeMode(4,QHeaderView::Stretch);
 
     sql = new SqlServer(this);
-    connect(sql,SIGNAL(TransformCmd(QUrl)),this,SLOT(ExcuteCmd(QUrl)));
+    connect(this,SIGNAL(SendMessage(TcpMap,QByteArray)),sql,
+            SLOT(ReadMessage(TcpMap,QByteArray)));
+    connect(sql,SIGNAL(SendMessage(TcpMap,QByteArray)),this,
+            SLOT(ReadMessage(TcpMap,QByteArray)));
+
+//    connect(sql,SIGNAL(TransformCmd(QUrl)),this,SLOT(ExcuteCmd(QUrl)));
     sql->Init();
 }
 /******************************************************************************
@@ -158,11 +164,11 @@ void WinServer::TcpInit()
 ******************************************************************************/
 void WinServer::TcpKeepLive()
 {
-    QUrl url;
-    url.setUserName(QString::number(ADDR));
-    url.setPort(ADDR);
-    url.setQuery(QString::number(HEART_BEAT));
-    emit TransformCmd(url);
+    TcpMap map;
+    map.insert("TxAddress",ADDR);
+    map.insert("RxAddress",ADDR);
+    map.insert("TxCommand",HEART_BEAT);
+    emit SendMessage(map,NULL);
 }
 /******************************************************************************
  * version:     1.0
@@ -220,13 +226,13 @@ void WinServer::GetGuestFiles()
     if (CurrentPath.isEmpty())
         CurrentPath.append("/");
     int port = ui->EditClientPort->text().toInt();
-    QUrl url;
-    url.setUserName(QString::number(ADDR));
-    url.setPort(port);
-    url.setQuery(QString::number(SHELL_CMD));
-    url.setFragment(QString("ls -aF %1").arg(CurrentPath));
+
+    TcpMap map;
+    map.insert("TxAddress",port);
+    map.insert("RxAddress",ADDR);
+    map.insert("TxCommand",SHELL_CMD);
     isList = true;
-    emit TransformCmd(url);
+    emit SendMessage(map,QString("ls -aF %1").arg(CurrentPath).toUtf8());
 }
 /******************************************************************************
  * version:     1.0
@@ -242,12 +248,12 @@ void WinServer::GetGuestFile()
         return;
     QString path = ui->EditClientFile->text();
     int port = ui->EditClientPort->text().toInt();
-    QUrl url;
-    url.setUserName(QString::number(ADDR));
-    url.setPort(port);
-    url.setQuery(QString::number(GUEST_PUT_HEAD));
-    url.setFragment(path);
-    emit TransformCmd(url);
+
+    TcpMap map;
+    map.insert("TxAddress",port);
+    map.insert("RxAddress",ADDR);
+    map.insert("TxCommand",GUEST_PUT_HEAD);
+    emit SendMessage(map,path.toUtf8());
 }
 /******************************************************************************
  * version:     1.0
@@ -263,12 +269,12 @@ void WinServer::PutLocalFile()
         return;
     QString path = ui->EditLocalFile->text();
     int port = ui->EditClientPort->text().toInt();
-    QUrl url;
-    url.setUserName(QString::number(ADDR));
-    url.setPort(port);
-    url.setPath(path);
-    url.setQuery(QString::number(FILE_HEAD));
-    emit TransformCmd(url);
+
+    TcpMap map;
+    map.insert("TxAddress",port);
+    map.insert("RxAddress",ADDR);
+    map.insert("TxCommand",FILE_HEAD);
+    emit SendMessage(map,path.toUtf8());
 }
 /******************************************************************************
  * version:     1.0
@@ -282,49 +288,48 @@ void WinServer::PutCommand()
         return;
     if (ui->EditClientPort->text().isEmpty())
         return;
-    QUrl url;
-    url.setUserName(QString::number(ADDR));
-    url.setQuery(QString::number(SHELL_CMD));
-    url.setFragment(ui->EditCommand->text());
-    url.setPort(ui->EditClientPort->text().toInt());
+
+    TcpMap map;
+    map.insert("TxAddress",ui->EditClientPort->text().toInt());
+    map.insert("RxAddress",ADDR);
+    map.insert("TxCommand",SHELL_CMD);
+    emit SendMessage(map,ui->EditCommand->text().toUtf8());
     isList = false;
-    emit TransformCmd(url);
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.12
- * brief:       接收数据
-******************************************************************************/
-void WinServer::ExcuteCmd(QUrl url)
+void WinServer::ReadMessage(TcpMap map, QByteArray msg)
 {
-    if (url.port() != ADDR) {
-        emit TransformCmd(url);
+    quint16 TxAddress = map.value("TxAddress");
+    quint16 TxCommand = map.value("TxCommand");
+    if (TxAddress!=ADDR) {
+        emit SendMessage(map,msg);
         return;
     }
 
-    quint16 fun = url.query().toInt();
-    switch (fun) {
+    switch (TxCommand) {
     case GUEST_LOGIN:
     case ADMIN_LOGIN:
-        Login(url);
+        qDebug()<<QTime::currentTime().toString()<<"登录";
+        sql->ReadMessage(map,msg);
         model->select();
+        qDebug()<<QTime::currentTime().toString()<<"登录OK";
         break;
     case GUEST_DROPED:
-        Droped(url);
+        qDebug()<<QTime::currentTime().toString()<<"登出";
+        sql->ReadMessage(map,msg);
         model->select();
+        qDebug()<<QTime::currentTime().toString()<<"登出OK";
         break;
     case ONLINE_DEVICES:
-        PutDevices(url);
+        OnlineDevices(map);
         break;
     case GUEST_DISPLAY:
-        ShowText(url);
+        ShowShell(msg);
         break;
     case SHELL_DAT:
         if (isList)
-            ShowFiles(url);
+            ShowFiles(msg);
         else
-            ShowText(url);
+            ShowShell(msg);
         break;
     default:
         break;
@@ -341,55 +346,42 @@ void WinServer::NewGuest(quint16 handle)
     TcpSocket *s = new TcpSocket;
     s->setSocketDescriptor(handle);
     s->moveToThread(Threads.at(SockectCount%MaxThreads));
-    connect(s,SIGNAL(TransformCmd(QUrl)),this,SLOT(ExcuteCmd(QUrl)));
-    connect(this,SIGNAL(TransformCmd(QUrl)),s,SLOT(ExcuteCmd(QUrl)));
-    qDebug()<<"new tcp"<<QTime::currentTime().toString();
+    connect(this,SIGNAL(SendMessage(TcpMap,QByteArray)),s,
+            SLOT(ReadMessage(TcpMap,QByteArray)));
+    connect(s,SIGNAL(SendMessage(TcpMap,QByteArray)),this,
+            SLOT(ReadMessage(TcpMap,QByteArray)));
+    qDebug()<<QTime::currentTime().toString()<<"new tcp connection";
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.12
- * brief:       用户登录
- * date:        2017.02.11
- * brief:       修正用户登录协议
-******************************************************************************/
-void WinServer::Login(QUrl url)
+void WinServer::OnlineDevices(TcpMap map)
 {
-    sql->InsertState(url);
+    quint16 TxAddress = map.value("TxAddress");
+    quint16 RxAddress = map.value("RxAddress");
+    QStringList ItemText;
+    for (int i=0; i<model->rowCount(); i++) {
+        QStringList s;
+        s.append(model->record(i).value("PORT").toString());
+        s.append(model->record(i).value("IP").toString());
+        s.append(model->record(i).value("NO").toString());
+        s.append(model->record(i).value("MAC").toString());
+        s.append(model->record(i).value("TIME").toString());
+        s.append(model->record(i).value("VERSION").toString());
+        ItemText.append(s.join(" "));
+    }
+    map["TxAddress"] = RxAddress;
+    map["RxAddress"] = TxAddress;
+
+    emit SendMessage(map,ItemText.join("@@").toUtf8());
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.12
- * brief:       用户退出
- * date:        2017.02.11
- * brief:       修正用户退出协议
-******************************************************************************/
-void WinServer::Droped(QUrl url)
+
+void WinServer::ShowShell(QByteArray msg)
 {
-    sql->InsertState(url);
+    ui->Text->setText(msg);
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.12
- * brief:       用户显示
-******************************************************************************/
-void WinServer::ShowText(QUrl url)
-{
-    QString temp = url.fragment(QUrl::FullyDecoded);
-    ui->Text->setText(temp);
-}
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.13
- * brief:       显示文件列表
-******************************************************************************/
-void WinServer::ShowFiles(QUrl url)
+
+void WinServer::ShowFiles(QByteArray msg)
 {
     isList = false;
-    QString temp = url.fragment(QUrl::FullyDecoded);
+    QString temp = msg;
     QStringList FileList = temp.split("\n",QString::SkipEmptyParts);
     for (int i=0; i<FileList.size(); i++) {
         QString t = FileList.at(i);
@@ -415,34 +407,6 @@ void WinServer::ShowFiles(QUrl url)
         }
         ui->TabFiles->addTopLevelItem(item);
     }
-}
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.12
- * brief:       发送在线列表
- * date:        2017.02.11
- * brief:       修正发送在线列表协议
-******************************************************************************/
-void WinServer::PutDevices(QUrl url)
-{
-    url.setPort(url.userName().toInt());
-    url.setUserName(QString::number(ADDR));
-    url.setQuery(QString::number(ONLINE_DEVICES));
-
-    QStringList ItemText;
-    for (int i=0; i<model->rowCount(); i++) {
-        QStringList s;
-        s.append(model->record(i).value("PORT").toString());
-        s.append(model->record(i).value("IP").toString());
-        s.append(model->record(i).value("NO").toString());
-        s.append(model->record(i).value("MAC").toString());
-        s.append(model->record(i).value("TIME").toString());
-        s.append(model->record(i).value("VERSION").toString());
-        ItemText.append(s.join(" "));
-    }
-    url.setFragment(ItemText.join("@@"));
-    emit TransformCmd(url);
 }
 /******************************************************************************
  * version:     1.0

@@ -39,7 +39,7 @@ private:
     Ui::WinServer *ui;
 
 signals:
-    void TransformCmd(QUrl url);
+    void SendMessage(TcpMap map,QByteArray msg);
 private slots:
     void WinInit(void);
     void BtnInit(void);
@@ -55,13 +55,10 @@ private slots:
     void GetGuestFile(void);
     void PutLocalFile(void);
     void PutCommand(void);
-    void ExcuteCmd(QUrl url);
-    void Login(QUrl url);
-    void Droped(QUrl url);
-    void ShowText(QUrl url);
-
-    void PutDevices(QUrl url);
-    void ShowFiles(QUrl url);
+    void ReadMessage(TcpMap map,QByteArray msg);
+    void OnlineDevices(TcpMap map);
+    void ShowShell(QByteArray msg);
+    void ShowFiles(QByteArray msg);
     void NewGuest(quint16 handle);
     virtual void hideEvent(QHideEvent *);
 private:

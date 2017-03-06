@@ -1,10 +1,8 @@
 #ifndef SQLSERVER_H
 #define SQLSERVER_H
 
-#include <QUrl>
 #include <QTime>
 #include <QObject>
-#include <QVariant>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlDatabase>
@@ -20,12 +18,15 @@ class SqlServer : public QObject
 public:
     explicit SqlServer(QObject *parent = 0);
 signals:
-    void TransformCmd(QUrl url);
+    void SendMessage(TcpMap map,QByteArray msg);
 public slots:
     void Init(void);
     void Quit(void);
-    void InsertState(QUrl url);
-    void UsersCheck(QUrl url);
+    void ReadMessage(TcpMap map,QByteArray msg);
+    void GuestRecord(TcpMap map,QByteArray msg);
+    void GuestStatus(TcpMap map,QByteArray msg);
+    void GuestRemove(TcpMap map,QByteArray msg);
+    void GuestLogin(TcpMap map,QByteArray msg);
 public:
     QSqlDatabase db;
 };

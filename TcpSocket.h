@@ -25,7 +25,7 @@ class TcpSocket : public QTcpSocket
 public:
     explicit TcpSocket(QObject *parent = 0);
 signals:
-    void TransformCmd(QUrl url);
+    void SendMessage(TcpMap map,QByteArray msg);
 public slots:
     void PutBlock(quint16 addr,quint16 cmd,QByteArray data);
 public:
@@ -39,10 +39,10 @@ private slots:
     void PutFileHead(QByteArray data);
     void PutFileData(qint64 numBytes);
     void ExcuteCmd(quint16 addr,quint16 cmd,QByteArray data);
-    void Login(QByteArray msg);
+    void GuestLogin(TcpMap map,QByteArray msg);
     void Error(QAbstractSocket::SocketError);
     void Display(QByteArray msg);
-    void ExcuteCmd(QUrl url);
+    void ReadMessage(TcpMap map,QByteArray msg);
 
 private:
     QDir *dir;

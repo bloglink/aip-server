@@ -77,14 +77,8 @@
 #define CAN_CMD_VERSION      0x08     //上传版本
 
 #define MSG_VERSION 0x0001
-struct TcpMsg {
-    quint16 version;
-    quint16 target;
-    quint16 origin;
-    quint16 command;
-    QString address;
-    QByteArray data;
-};
+
+typedef QMap<QString,quint16> TcpMap;
 
 //extern
 

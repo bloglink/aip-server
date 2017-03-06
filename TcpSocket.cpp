@@ -22,6 +22,7 @@ TcpSocket::TcpSocket(QObject *parent) : QTcpSocket(parent)
         dir->mkdir(QString(TMP));
     if (!dir->exists(QString(NET)))
         dir->mkdir(QString(NET));
+
 }
 /******************************************************************************
  * version:     1.0
@@ -31,9 +32,11 @@ TcpSocket::TcpSocket(QObject *parent) : QTcpSocket(parent)
 ******************************************************************************/
 void TcpSocket::Droped()
 {
-    QUrl url = UrlInit;
-    url.setQuery(QString::number(GUEST_DROPED));
-    emit TransformCmd(url);
+    TcpMap map;
+    map.insert("TxAddress",ADDR);
+    map.insert("RxAddress",this->peerPort());
+    map.insert("TxCommand",GUEST_DROPED);
+    emit SendMessage(map,NULL);
     this->deleteLater();
 }
 /******************************************************************************
@@ -187,22 +190,29 @@ void TcpSocket::PutFileData(qint64)
 void TcpSocket::ExcuteCmd(quint16 addr, quint16 cmd, QByteArray data)
 {
     HeartCount = 0;
+    TcpMap map;
+    map.insert("TxAddress",addr);
+    map.insert("RxAddress",this->peerPort());
+    map.insert("TxCommand",cmd);
+
     QUrl url = UrlInit;
     url.setPort(addr);
     url.setQuery(QString::number(cmd));
     url.setFragment(data);
+
     if (addr != ADDR) {//数据转发
-        emit TransformCmd(url);
+        emit SendMessage(map,data);
         return;
     }
     switch (cmd) {
     case GUEST_LOGIN:
     case ADMIN_LOGIN://登录
-        Login(data);
+        GuestLogin(map,data);
+//        Login(data);
         break;
     case ONLINE_DEVICES://在线列表
     case SHELL_DAT://执行命令结果
-        emit TransformCmd(url);
+        emit SendMessage(map,data);
         break;
     case FILE_SUCCESS://发送成功
         Display("服务器发送成功");
@@ -226,46 +236,34 @@ void TcpSocket::ExcuteCmd(quint16 addr, quint16 cmd, QByteArray data)
         GetFileData(data);
         break;
     case HEART_BEAT://心跳
-        PutBlock(ADDR,HEART_BEAT,url.fragment().toUtf8());
+        PutBlock(ADDR,HEART_BEAT,NULL);
         break;
     default:
         break;
     }
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.16
- * brief:       用户登录
-******************************************************************************/
-void TcpSocket::Login(QByteArray msg)
+
+void TcpSocket::GuestLogin(TcpMap map, QByteArray msg)
 {
-    UrlInit.setScheme("aipuo");
-    UrlInit.setUserName(QString::number(this->peerPort()));
-    UrlInit.setHost(this->peerAddress().toString());
-    UrlInit.setPort(ADDR);
-    UrlInit.setQuery(QString::number(ADMIN_LOGIN));
-    UrlInit.setFragment(msg);
-    emit TransformCmd(UrlInit);
+    msg.append(" ");
+    msg.append(this->peerAddress().toString());
+    emit SendMessage(map,msg);
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.16
- * brief:       命令执行
-******************************************************************************/
-void TcpSocket::ExcuteCmd(QUrl url)
+
+void TcpSocket::ReadMessage(TcpMap map, QByteArray msg)
 {
-    if (url.port() != ADDR && url.port() != this->peerPort())
+    quint16 TxAddress = map.value("TxAddress");
+    quint16 RxAddress = map.value("RxAddress");
+    quint16 TxCommand = map.value("TxCommand");
+    if (TxAddress!=ADDR && TxAddress!=this->peerPort())
         return;
-    quint16 fun = url.query().toInt();
-    switch (fun) {
+    switch (TxCommand) {
     case FILE_HEAD:
-        PutFileHead(url.path().toUtf8());
+        PutFileHead(msg);
         break;
     case BUILD_TRANSMIT:
         isTransmit = true;
-        TransmitPort = url.fragment().toInt();
+        TransmitPort = msg.toInt();
         break;
     case BREAK_TRANSMIT:
         isTransmit = false;
@@ -276,7 +274,7 @@ void TcpSocket::ExcuteCmd(QUrl url)
             this->disconnectFromHost();
         break;
     default:
-        PutBlock(url.userName().toInt(),fun,url.fragment(QUrl::FullyDecoded).toUtf8());
+        PutBlock(RxAddress,TxCommand,msg);
         break;
     }
 }
@@ -301,14 +299,14 @@ void TcpSocket::Error(QAbstractSocket::SocketError socketError)
 ******************************************************************************/
 void TcpSocket::Display(QByteArray msg)
 {
-    QUrl url = UrlInit;
-    url.setPort(ADDR);
-    url.setQuery(QString::number(GUEST_DISPLAY));
-    url.setFragment(msg);
-    emit TransformCmd(url);
+    TcpMap map;
+    map.insert("TxAddress",ADDR);
+    map.insert("RxAddress",this->peerPort());
+    map.insert("TxCommand",GUEST_DISPLAY);
+    emit SendMessage(map,msg);
 
     if (isTransmit) {
-        url.setPort(TransmitPort);
-        emit TransformCmd(url);
+        map["TxAddress"] = TransmitPort;
+        emit SendMessage(map,msg);
     }
 }
