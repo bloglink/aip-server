@@ -147,7 +147,7 @@ void WinServer::TcpInit()
         connect(tcpServer,SIGNAL(NewGuest(quint16)),this,SLOT(NewGuest(quint16)));
     }
     if (ui->BtnStartServer->text() == tr("开始监听")) {
-        tcpServer->listen(QHostAddress::Any,ui->EditUserPort->text().toInt());
+        tcpServer->listen(QHostAddress::AnyIPv4,ui->EditUserPort->text().toInt());
         ui->BtnStartServer->setText(tr("停止监听"));
         timer->start(5000);
     } else {

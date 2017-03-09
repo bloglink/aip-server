@@ -15,7 +15,8 @@ TcpSocket::TcpSocket(QObject *parent) : QTcpSocket(parent)
     connect(this,SIGNAL(disconnected()),this,SLOT(Droped()));
     connect(this,SIGNAL(readyRead()), this, SLOT(GetBlock()));
     connect(this,SIGNAL(bytesWritten(qint64)),this,SLOT(PutFileData(qint64)));
-    connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(Error(QAbstractSocket::SocketError)));
+    connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,
+            SLOT(Error(QAbstractSocket::SocketError)));
 
     dir = new QDir;
     if (!dir->exists(QString(TMP)))
@@ -187,7 +188,7 @@ void TcpSocket::PutFileData(qint64)
  * date:        2017.01.16
  * brief:       命令执行
 ******************************************************************************/
-void TcpSocket::ExcuteCmd(quint16 addr, quint16 cmd, QByteArray data)
+void TcpSocket::ExcuteCmd(quint16 addr, quint16 cmd, QByteArray msg)
 {
     HeartCount = 0;
     TcpMap map;
@@ -198,42 +199,42 @@ void TcpSocket::ExcuteCmd(quint16 addr, quint16 cmd, QByteArray data)
     QUrl url = UrlInit;
     url.setPort(addr);
     url.setQuery(QString::number(cmd));
-    url.setFragment(data);
+    url.setFragment(msg);
 
     if (addr != ADDR) {//数据转发
-        emit SendMessage(map,data);
+        emit SendMessage(map,msg);
         return;
     }
     switch (cmd) {
     case GUEST_LOGIN:
     case ADMIN_LOGIN://登录
-        GuestLogin(map,data);
+        GuestLogin(map,msg);
 //        Login(data);
         break;
     case ONLINE_DEVICES://在线列表
     case SHELL_DAT://执行命令结果
-        emit SendMessage(map,data);
+        emit SendMessage(map,msg);
         break;
     case FILE_SUCCESS://发送成功
         Display("服务器发送成功");
         break;
     case FILE_ERROR://发送失败
-        Display(data);
+        Display(msg);
         break;
     case GUEST_PUT_HEAD://获取客户文件
-        this->PutBlock(ADDR,GUEST_PUT_HEAD,data);
+        this->PutBlock(ADDR,GUEST_PUT_HEAD,msg);
         break;
     case GUEST_GET_HEAD://客户获取文件
-        PutFileHead(data);
+        PutFileHead(msg);
         break;
     case FILE_HEAD://收取文件头
-        GetFileHead(data);
+        GetFileHead(msg);
         break;
     case FILE_HEAD_ERROR://获取文件失败
-        Display(data);
+        Display(msg);
         break;
     case FILE_DATA://获取文件内容
-        GetFileData(data);
+        GetFileData(msg);
         break;
     case HEART_BEAT://心跳
         PutBlock(ADDR,HEART_BEAT,NULL);
