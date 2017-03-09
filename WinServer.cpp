@@ -9,13 +9,14 @@ WinServer::WinServer(QWidget *parent) :
     tcpServer = NULL;
     sql = NULL;
 
-    WinInit();
-    BtnInit();
-    DatInit();
-    SqlInit();
+    InitWindow();
+    InitButton();
+    InitSetting();
+    InitSqlite();
+    InitThread();
 
     timer = new QTimer(this);
-    connect(timer,SIGNAL(timeout()),this,SLOT(TcpKeepLive()));
+    connect(timer,SIGNAL(timeout()),this,SLOT(KeepLive()));
     SockectCount = 0;
 }
 
@@ -27,69 +28,46 @@ WinServer::~WinServer()
     }
     delete ui;
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.02.20
- * brief:       初始化界面和线程池
-******************************************************************************/
-void WinServer::WinInit()
+void WinServer::InitWindow()
+{
+    this->setWindowTitle("二代服务器V-0.3.0.5");
+    qRegisterMetaType<TcpMap>("TcpMap");
+}
+
+void WinServer::InitThread()
 {
     for (int i=0; i<MaxThreads; i++) {
         Threads.append(new QThread(this));
         Threads.at(i)->start();
     }
-    this->setWindowTitle("二代服务器V-0.3.0.3");
-    qRegisterMetaType<TcpMap>("TcpMap");
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.03.24
- * brief:       初始化按键
-******************************************************************************/
-void WinServer::BtnInit()
+void WinServer::InitButton()
 {
-    connect(ui->TabServer,SIGNAL(clicked(QModelIndex)),this,SLOT(TcpDevSelect(QModelIndex)));
-    connect(ui->TabFiles,SIGNAL(clicked(QModelIndex)),this,SLOT(ViewClick(QModelIndex)));
+    connect(ui->TabServer,SIGNAL(clicked(QModelIndex)),this,SLOT(ClickItem(QModelIndex)));
+    connect(ui->TabFiles,SIGNAL(clicked(QModelIndex)),this,SLOT(ClickView(QModelIndex)));
     connect(ui->BtnGetFiles,SIGNAL(clicked(bool)),this,SLOT(GetGuestFiles()));
     connect(ui->BtnGetCurrentFile,SIGNAL(clicked(bool)),this,SLOT(GetGuestFile()));
     connect(ui->BtnPutCurrentFile,SIGNAL(clicked(bool)),this,SLOT(PutLocalFile()));
-    connect(ui->BtnStartServer,SIGNAL(clicked(bool)),this,SLOT(TcpInit()));
+    connect(ui->BtnStartServer,SIGNAL(clicked(bool)),this,SLOT(InitServer()));
 
     connect(ui->BtnCommand,SIGNAL(clicked(bool)),this,SLOT(PutCommand()));
     connect(ui->EditCommand,SIGNAL(editingFinished()),this,SLOT(PutCommand()));
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.03.24
- * brief:       数据初始化
-******************************************************************************/
-void WinServer::DatInit()
+
+void WinServer::InitSetting()
 {
     set = new QSettings(GLOBAL_SET,QSettings::IniFormat);
     set->setIniCodec("GB18030");
     set->beginGroup("Server");
     ui->EditUserPort->setText(set->value("UserPort","6000").toString());
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.03.24
- * brief:       数据保存
-******************************************************************************/
-void WinServer::DatSave()
+
+void WinServer::SaveSetting()
 {
     set->setValue("UserPort", ui->EditUserPort->text());
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.03.24
- * brief:       初始化数据库
-******************************************************************************/
-void WinServer::SqlInit()
+
+void WinServer::InitSqlite()
 {
     QFile file(SQL);
     if (!file.exists()) {
@@ -130,17 +108,10 @@ void WinServer::SqlInit()
             SLOT(ReadMessage(TcpMap,QByteArray)));
     connect(sql,SIGNAL(SendMessage(TcpMap,QByteArray)),this,
             SLOT(ReadMessage(TcpMap,QByteArray)));
-
-//    connect(sql,SIGNAL(TransformCmd(QUrl)),this,SLOT(ExcuteCmd(QUrl)));
     sql->Init();
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.03.24
- * brief:       开始监听
-******************************************************************************/
-void WinServer::TcpInit()
+
+void WinServer::InitServer()
 {
     if (tcpServer == NULL) {
         tcpServer = new TcpServer(this);
@@ -156,13 +127,8 @@ void WinServer::TcpInit()
         ui->BtnStartServer->setText(tr("开始监听"));
     }
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.07.16
- * brief:       心跳
-******************************************************************************/
-void WinServer::TcpKeepLive()
+
+void WinServer::KeepLive()
 {
     TcpMap map;
     map.insert("TxAddress",ADDR);
@@ -170,13 +136,8 @@ void WinServer::TcpKeepLive()
     map.insert("TxCommand",HEART_BEAT);
     emit SendMessage(map,NULL);
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.12
- * brief:       选择设备
-******************************************************************************/
-void WinServer::TcpDevSelect(QModelIndex index)
+
+void WinServer::ClickItem(QModelIndex index)
 {
     int row = index.row();
     QString port = model->record(row).value("PORT").toString();
@@ -184,13 +145,8 @@ void WinServer::TcpDevSelect(QModelIndex index)
     CurrentPath.clear();
     ui->TabFiles->clear();
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.12
- * brief:       选择文件
-******************************************************************************/
-void WinServer::ViewClick(QModelIndex)
+
+void WinServer::ClickView(QModelIndex)
 {
     QString temp = ui->TabFiles->currentItem()->text(1);
     QString name = ui->TabFiles->currentItem()->text(0);
@@ -212,12 +168,7 @@ void WinServer::ViewClick(QModelIndex)
         ui->EditClientFile->setText(path);
     }
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.12
- * brief:       获取文件列表
-******************************************************************************/
+
 void WinServer::GetGuestFiles()
 {
     if (ui->EditClientPort->text().isEmpty())
@@ -234,12 +185,7 @@ void WinServer::GetGuestFiles()
     isList = true;
     emit SendMessage(map,QString("ls -aF %1").arg(CurrentPath).toUtf8());
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.12
- * brief:       获取文件
-******************************************************************************/
+
 void WinServer::GetGuestFile()
 {
     if (ui->EditClientPort->text().isEmpty())
@@ -255,12 +201,7 @@ void WinServer::GetGuestFile()
     map.insert("TxCommand",GUEST_PUT_HEAD);
     emit SendMessage(map,path.toUtf8());
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.12
- * brief:       发送文件
-******************************************************************************/
+
 void WinServer::PutLocalFile()
 {
     if (ui->EditClientPort->text().isEmpty())
@@ -276,12 +217,7 @@ void WinServer::PutLocalFile()
     map.insert("TxCommand",FILE_HEAD);
     emit SendMessage(map,path.toUtf8());
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.12
- * brief:       发送命令
-******************************************************************************/
+
 void WinServer::PutCommand()
 {
     if (ui->EditCommand->text().isEmpty())
@@ -304,7 +240,6 @@ void WinServer::ReadMessage(TcpMap map, QByteArray msg)
         emit SendMessage(map,msg);
         return;
     }
-
     switch (TxCommand) {
     case GUEST_LOGIN:
     case ADMIN_LOGIN:
@@ -335,12 +270,7 @@ void WinServer::ReadMessage(TcpMap map, QByteArray msg)
         break;
     }
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.18
- * brief:       新的连接
-******************************************************************************/
+
 void WinServer::NewGuest(quint16 handle)
 {
     TcpSocket *s = new TcpSocket;
@@ -352,6 +282,7 @@ void WinServer::NewGuest(quint16 handle)
             SLOT(ReadMessage(TcpMap,QByteArray)));
     qDebug()<<QTime::currentTime().toString()<<"new tcp connection";
 }
+
 void WinServer::OnlineDevices(TcpMap map)
 {
     quint16 TxAddress = map.value("TxAddress");
@@ -408,16 +339,9 @@ void WinServer::ShowFiles(QByteArray msg)
         ui->TabFiles->addTopLevelItem(item);
     }
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.18
- * brief:       退出保存
-******************************************************************************/
+
 void WinServer::hideEvent(QHideEvent *)
 {
-    DatSave();
+    SaveSetting();
 }
-/*******************************************************************************
- *                                  END
-*******************************************************************************/
+/*********************************END OF FILE**********************************/

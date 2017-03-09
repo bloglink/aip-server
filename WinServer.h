@@ -41,16 +41,17 @@ private:
 signals:
     void SendMessage(TcpMap map,QByteArray msg);
 private slots:
-    void WinInit(void);
-    void BtnInit(void);
-    void DatInit(void);
-    void DatSave(void);
-    void SqlInit(void);
+    void InitWindow(void);
+    void InitThread(void);
+    void InitButton(void);
+    void InitSetting(void);
+    void SaveSetting(void);
+    void InitSqlite(void);
 
-    void TcpInit(void);
-    void TcpKeepLive(void);
-    void TcpDevSelect(QModelIndex index);
-    void ViewClick(QModelIndex);
+    void InitServer(void);
+    void KeepLive(void);
+    void ClickItem(QModelIndex index);
+    void ClickView(QModelIndex);
     void GetGuestFiles(void);
     void GetGuestFile(void);
     void PutLocalFile(void);
