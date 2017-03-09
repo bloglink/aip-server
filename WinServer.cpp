@@ -361,9 +361,9 @@ void WinServer::OnlineDevices(TcpMap map)
         QStringList s;
         s.append(model->record(i).value("PORT").toString());
         s.append(model->record(i).value("IP").toString());
+        s.append(model->record(i).value("TIME").toString());
         s.append(model->record(i).value("NO").toString());
         s.append(model->record(i).value("MAC").toString());
-        s.append(model->record(i).value("TIME").toString());
         s.append(model->record(i).value("VERSION").toString());
         ItemText.append(s.join(" "));
     }

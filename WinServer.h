@@ -66,7 +66,6 @@ private:
 
     SqlServer *sql;
     QSettings *set;
-    QStringList ItemText;
     QString CurrentPath;
     bool isList;
 
