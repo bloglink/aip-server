@@ -66,6 +66,8 @@ private:
     quint8 SockectVersion;
     bool isTransmit;
     int TransmitPort;
+
+    QString InitMsg;
 };
 
 #endif // TCPSOCKET_H

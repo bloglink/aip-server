@@ -37,7 +37,7 @@ void TcpSocket::Droped()
     map.insert("TxAddress",ADDR);
     map.insert("RxAddress",this->peerPort());
     map.insert("TxCommand",GUEST_DROPED);
-    emit SendMessage(map,NULL);
+    emit SendMessage(map,InitMsg.toUtf8());
     this->deleteLater();
 }
 /******************************************************************************
@@ -248,6 +248,7 @@ void TcpSocket::GuestLogin(TcpMap map, QByteArray msg)
 {
     msg.append(" ");
     msg.append(this->peerAddress().toString());
+    InitMsg = msg;
     emit SendMessage(map,msg);
 }
 

@@ -32,11 +32,14 @@ void SqlServer::Quit(void)
 }
 void SqlServer::ReadMessage(TcpMap map, QByteArray msg)
 {
+    if (msg.isEmpty())
+        return;
     quint16 TxCommand = map.value("TxCommand");
     switch (TxCommand) {
     case ADMIN_LOGIN:
         GuestLogin(map,msg);
     case GUEST_LOGIN:
+    case GUEST_DROPED:
         GuestRecord(map,msg);
         GuestRemove(map,msg);
         GuestStatus(map,msg);
