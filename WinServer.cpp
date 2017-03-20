@@ -32,6 +32,13 @@ void WinServer::InitWindow()
 {
     this->setWindowTitle("二代服务器V-0.3.0.5");
     qRegisterMetaType<TcpMap>("TcpMap");
+    fileModel = new QFileSystemModel(this);
+    fileModel->setFilter(QDir::AllEntries | QDir::NoDotAndDotDot);
+    ui->LocalFiles->setModel(fileModel);
+    ui->LocalFiles->setRootIndex(fileModel->setRootPath("/home/link"));
+    ui->LocalFiles->hideColumn(3);
+    ui->LocalFiles->hideColumn(2);
+    ui->LocalFiles->hideColumn(1);
 }
 
 void WinServer::InitThread()
@@ -45,6 +52,7 @@ void WinServer::InitButton()
 {
     connect(ui->TabServer,SIGNAL(clicked(QModelIndex)),this,SLOT(ClickItem(QModelIndex)));
     connect(ui->TabFiles,SIGNAL(clicked(QModelIndex)),this,SLOT(ClickView(QModelIndex)));
+    connect(ui->LocalFiles,SIGNAL(clicked(QModelIndex)),this,SLOT(ClickLocalFiles(QModelIndex)));
     connect(ui->BtnGetFiles,SIGNAL(clicked(bool)),this,SLOT(GetGuestFiles()));
     connect(ui->BtnGetCurrentFile,SIGNAL(clicked(bool)),this,SLOT(GetGuestFile()));
     connect(ui->BtnPutCurrentFile,SIGNAL(clicked(bool)),this,SLOT(PutLocalFile()));
@@ -167,6 +175,11 @@ void WinServer::ClickView(QModelIndex)
         path.append(name);
         ui->EditClientFile->setText(path);
     }
+}
+
+void WinServer::ClickLocalFiles(QModelIndex index)
+{
+    ui->EditLocalFile->setText(fileModel->filePath(index));
 }
 
 void WinServer::GetGuestFiles()

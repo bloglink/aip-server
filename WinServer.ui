@@ -13,8 +13,8 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" rowstretch="7,0,0,0,0,0,1" columnstretch="3,0,5,1">
-   <item row="0" column="0" colspan="4">
+  <layout class="QGridLayout" name="gridLayout" rowstretch="7,0,0,0,0,0,1" columnstretch="2,3,0,5,1">
+   <item row="0" column="0" colspan="5">
     <widget class="QTableView" name="TabServer">
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
@@ -36,14 +36,14 @@
      </column>
     </widget>
    </item>
-   <item row="1" column="1">
+   <item row="1" column="2">
     <widget class="QLabel" name="TextClientPort">
      <property name="text">
       <string>客户端口:</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="2">
+   <item row="1" column="3">
     <widget class="QLineEdit" name="EditClientPort">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -59,7 +59,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="3">
+   <item row="1" column="4">
     <widget class="QPushButton" name="BtnGetFiles">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -72,14 +72,14 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
+   <item row="2" column="2">
     <widget class="QLabel" name="TextClientFile">
      <property name="text">
       <string>客户文件:</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="2">
+   <item row="2" column="3">
     <widget class="QLineEdit" name="EditClientFile">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -95,7 +95,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="3">
+   <item row="2" column="4">
     <widget class="QPushButton" name="BtnGetCurrentFile">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -108,14 +108,14 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
+   <item row="3" column="2">
     <widget class="QLabel" name="TextLocalFile">
      <property name="text">
       <string>本机文件:</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="2">
+   <item row="3" column="3">
     <widget class="QLineEdit" name="EditLocalFile">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -134,7 +134,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="3">
+   <item row="3" column="4">
     <widget class="QPushButton" name="BtnPutCurrentFile">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -147,14 +147,14 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
+   <item row="4" column="2">
     <widget class="QLabel" name="TextCommand">
      <property name="text">
       <string>系统命令:</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="2">
+   <item row="4" column="3">
     <widget class="QLineEdit" name="EditCommand">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -176,7 +176,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="3">
+   <item row="4" column="4">
     <widget class="QPushButton" name="BtnCommand">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
@@ -189,14 +189,14 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
+   <item row="5" column="2">
     <widget class="QLabel" name="TextUserPort">
      <property name="text">
       <string>监听端口:</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="2">
+   <item row="5" column="3">
     <widget class="QLineEdit" name="EditUserPort">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -215,7 +215,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="3" rowspan="2">
+   <item row="5" column="4" rowspan="2">
     <widget class="QPushButton" name="BtnStartServer">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
@@ -228,8 +228,11 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="1" colspan="2">
+   <item row="6" column="2" colspan="2">
     <widget class="QTextBrowser" name="Text"/>
+   </item>
+   <item row="1" column="1" rowspan="6">
+    <widget class="QTreeView" name="LocalFiles"/>
    </item>
   </layout>
  </widget>

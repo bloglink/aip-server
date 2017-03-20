@@ -16,6 +16,7 @@
 #include <QCryptographicHash>
 #include <QSqlTableModel>
 #include <QSqlRecord>
+#include <QFileSystemModel>
 
 #include "TcpServer.h"
 #include "TcpSocket.h"
@@ -52,6 +53,7 @@ private slots:
     void KeepLive(void);
     void ClickItem(QModelIndex index);
     void ClickView(QModelIndex);
+    void ClickLocalFiles(QModelIndex index);
     void GetGuestFiles(void);
     void GetGuestFile(void);
     void PutLocalFile(void);
@@ -76,6 +78,7 @@ private:
 
     QSqlDatabase db;
     QSqlTableModel *model;
+    QFileSystemModel *fileModel;
 };
 
 #endif // WINSERVER_H
