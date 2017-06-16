@@ -2,50 +2,36 @@
 
 TcpSocket::TcpSocket(QObject *parent) : QTcpSocket(parent)
 {
-    SockectVersion= 1;
-    HeartCount   = 0;
-    LoadSize     = 4*1024;;
-    BlockSize    = 0;
-    GetFileByte    = 0;
-    GetFileSize  = 0;
-    PutFileSize = 0;
-    PutFileByte = 0;
-    isTransmit = false;
+    Init();
 
-    connect(this,SIGNAL(disconnected()),this,SLOT(Droped()));
+    connect(this,SIGNAL(disconnected()),this,SLOT(Logout()));
     connect(this,SIGNAL(readyRead()), this, SLOT(GetBlock()));
     connect(this,SIGNAL(bytesWritten(qint64)),this,SLOT(PutFileData(qint64)));
     connect(this,SIGNAL(error(QAbstractSocket::SocketError)),this,
             SLOT(Error(QAbstractSocket::SocketError)));
 
-    dir = new QDir;
+    QDir *dir = new QDir;
     if (!dir->exists(QString(TMP)))
         dir->mkdir(QString(TMP));
     if (!dir->exists(QString(NET)))
         dir->mkdir(QString(NET));
+}
 
-}
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.07.16
- * brief:       连接中断
-******************************************************************************/
-void TcpSocket::Droped()
+void TcpSocket::Init()
 {
-    TcpMap map;
-    map.insert("TxAddress",ADDR);
-    map.insert("RxAddress",this->peerPort());
-    map.insert("TxCommand",GUEST_DROPED);
-    emit SendMessage(map,InitMsg.toUtf8());
-    this->deleteLater();
+    HeartCount   = 0;
+    LoadSize     = 4*1024;
+    BlockSize    = 0;
+    GetFileByte  = 0;
+    GetFileSize  = 0;
+    PutFileSize = 0;
+    PutFileByte = 0;
+    isTransmit = false;
+    proc = new QProcess(this);
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.07.16
- * brief:       读取数据
-******************************************************************************/
+
+
+
 void TcpSocket::GetBlock()
 {
     quint16 addr;
@@ -71,12 +57,7 @@ void TcpSocket::GetBlock()
         BlockSize = 0;
     }
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.07.16
- * brief:       读取文件头
-******************************************************************************/
+
 void TcpSocket::GetFileHead(QByteArray msg)
 {
     GetFileMD5 = msg.mid(0,16);
@@ -90,12 +71,7 @@ void TcpSocket::GetFileHead(QByteArray msg)
         PutBlock(ADDR,FILE_HEAD_ERROR,file->errorString().toUtf8());
     }
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.07.16
- * brief:       读取文件
-******************************************************************************/
+
 void TcpSocket::GetFileData(QByteArray msg)
 {
     int ret;
@@ -104,7 +80,6 @@ void TcpSocket::GetFileData(QByteArray msg)
     else
         return;
     GetFileByte += ret;
-    Display(QString("服务器已接收%1%").arg(GetFileByte*100/GetFileSize).toUtf8());
     if (GetFileByte >= GetFileSize) {
         file->seek(0);
         QByteArray md5 = QCryptographicHash::hash(file->readAll(),QCryptographicHash::Md5);
@@ -113,21 +88,16 @@ void TcpSocket::GetFileData(QByteArray msg)
         if (GetFileMD5 == md5) {
             QProcess::execute("sync");
             QString cmd = QString("mv %1 %2").arg(file->fileName()).arg(NET);
+            cmd.append(LoginMsg.value("TxUser").toString());
             QProcess::execute(cmd);
-            Display("服务器接收成功");
+            PutBlock(ADDR,FILE_SUCCESS,"NULL");
         } else {
             file->close();
             file->remove();
-            Display("服务器接收失败");
         }
     }
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.07.16
- * brief:       写数据
-******************************************************************************/
+
 void TcpSocket::PutBlock(quint16 addr,quint16 cmd,QByteArray data)
 {
     QByteArray msg;
@@ -138,18 +108,12 @@ void TcpSocket::PutBlock(quint16 addr,quint16 cmd,QByteArray data)
     out<<(qint64)(msg.size()-sizeof(qint64));
     this->write(msg);
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.07.16
- * brief:       发送文件头
-******************************************************************************/
+
 void TcpSocket::PutFileHead(QByteArray data)
 {
-    QString name = data;
+    QString name = data.insert(0,NET);
     file = new QFile(name);
     if (!file->open(QFile::ReadOnly)) {
-        Display(file->errorString().toUtf8());
         return;
     }
     PutFileMD5 = QCryptographicHash::hash(file->readAll(),QCryptographicHash::Md5);
@@ -158,17 +122,13 @@ void TcpSocket::PutFileHead(QByteArray data)
     PutFileByte = 0;
     PutFileName = name.right(name.size()- name.lastIndexOf('/')-1).toUtf8();
     QByteArray msg;
+
     msg.append(PutFileMD5);
     msg.append(QString(" %1 ").arg(PutFileSize));
     msg.append(PutFileName);
     PutBlock(ADDR,FILE_HEAD,msg);
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.07.16
- * brief:       发送文件数据
-******************************************************************************/
+
 void TcpSocket::PutFileData(qint64)
 {
     if (PutFileSize == 0)
@@ -176,50 +136,40 @@ void TcpSocket::PutFileData(qint64)
     PutBlock(ADDR,FILE_DATA,file->read(LoadSize));
     PutFileByte += (int)qMin(PutFileSize,LoadSize);
     PutFileSize -= (int)qMin(PutFileSize,LoadSize);
-    Display(QString("服务器已发送%1%").arg(PutFileByte*100/(PutFileSize+PutFileByte)).toUtf8());
     HeartCount = 0;
     if (PutFileSize==0) {
         file->close();
     }
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2017.01.16
- * brief:       命令执行
-******************************************************************************/
+
 void TcpSocket::ExcuteCmd(quint16 addr, quint16 cmd, QByteArray msg)
 {
     HeartCount = 0;
-    TcpMap map;
-    map.insert("TxAddress",addr);
-    map.insert("RxAddress",this->peerPort());
-    map.insert("TxCommand",cmd);
-
-    QUrl url = UrlInit;
-    url.setPort(addr);
-    url.setQuery(QString::number(cmd));
-    url.setFragment(msg);
-
+    QJsonObject json;
+    json.insert("TxAddress",addr);
+    json.insert("RxAddress",this->peerPort());
+    json.insert("TxCommand",cmd);
+    json.insert("TxMessage",QString(msg));
     if (addr != ADDR) {//数据转发
-        emit SendMessage(map,msg);
+        emit SendJson(json);
         return;
     }
     switch (cmd) {
     case GUEST_LOGIN:
-    case ADMIN_LOGIN://登录
-        GuestLogin(map,msg);
-//        Login(data);
+        json.insert("TxMessage",QString(msg));
+        Login(json);
         break;
     case ONLINE_DEVICES://在线列表
-    case SHELL_DAT://执行命令结果
-        emit SendMessage(map,msg);
+        emit SendJson(json);
+        break;
+    case SERVER_FILES:
+        proc->start(QString("ls -F ./network/%1").arg(LoginMsg.value("TxUser").toString()));
+        proc->waitForFinished();
+        PutBlock(quint16(addr),SERVER_FILES,proc->readAll());
         break;
     case FILE_SUCCESS://发送成功
-        Display("服务器发送成功");
         break;
     case FILE_ERROR://发送失败
-        Display(msg);
         break;
     case GUEST_PUT_HEAD://获取客户文件
         this->PutBlock(ADDR,GUEST_PUT_HEAD,msg);
@@ -231,7 +181,6 @@ void TcpSocket::ExcuteCmd(quint16 addr, quint16 cmd, QByteArray msg)
         GetFileHead(msg);
         break;
     case FILE_HEAD_ERROR://获取文件失败
-        Display(msg);
         break;
     case FILE_DATA://获取文件内容
         GetFileData(msg);
@@ -244,71 +193,48 @@ void TcpSocket::ExcuteCmd(quint16 addr, quint16 cmd, QByteArray msg)
     }
 }
 
-void TcpSocket::GuestLogin(TcpMap map, QByteArray msg)
+void TcpSocket::Login(QJsonObject json)
 {
-    msg.append(" ");
-    msg.append(this->peerAddress().toString());
-    InitMsg = msg;
-    emit SendMessage(map,msg);
+    QString TxUser = json.value("TxMessage").toString().split(" ").at(0);
+    QString TxAddrMac = json.value("TxMessage").toString().split(" ").at(1);
+    QString TxVersion = json.value("TxMessage").toString().split(" ").at(2);
+    QString t = QDateTime::currentDateTime().toString("yy-MM-dd hh:mm:ss");
+    LoginMsg = json;
+    LoginMsg.insert("TxTime",t);
+    LoginMsg.insert("TxUser",TxUser);
+    LoginMsg.insert("TxMessage","Login");
+    LoginMsg.insert("TxAddrMac",TxAddrMac);
+    LoginMsg.insert("TxVersion",TxVersion);
+    LoginMsg.insert("TxAddr",this->peerAddress().toString());
+    emit SendJson(LoginMsg);
+    QDir *dir = new QDir;
+    if (!dir->exists(QString("%1%2").arg(NET).arg(TxUser)))
+        dir->mkdir(QString("%1%2").arg(NET).arg(TxUser));
 }
 
-void TcpSocket::ReadMessage(TcpMap map, QByteArray msg)
+void TcpSocket::Logout()
 {
-    quint16 TxAddress = map.value("TxAddress");
-    quint16 RxAddress = map.value("RxAddress");
-    quint16 TxCommand = map.value("TxCommand");
+    LoginMsg.insert("TxMessage","Logout");
+    LoginMsg.insert("TxCommand",GUEST_DROPED);
+    emit SendJson(LoginMsg);
+    this->deleteLater();
+}
+
+void TcpSocket::ReadJson(QJsonObject json)
+{
+    quint16 TxAddress = json.value("TxAddress").toInt();
     if (TxAddress!=ADDR && TxAddress!=this->peerPort())
         return;
-    switch (TxCommand) {
-    case FILE_HEAD:
-        PutFileHead(msg);
-        break;
-    case BUILD_TRANSMIT:
-        isTransmit = true;
-        TransmitPort = msg.toInt();
-        break;
-    case BREAK_TRANSMIT:
-        isTransmit = false;
-        break;
-    case HEART_BEAT://心跳
-        HeartCount++;
-        if (HeartCount > 5)
-            this->disconnectFromHost();
-        break;
-    default:
-        PutBlock(RxAddress,TxCommand,msg);
-        break;
-    }
+    quint16 RxAddress = json.value("RxAddress").toInt();
+    quint16 TxCommand = json.value("TxCommand").toInt();
+    PutBlock(RxAddress,TxCommand,json.value("TxMessage").toString().toUtf8());
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.07.16
- * brief:       输出错误信息
-******************************************************************************/
+
 void TcpSocket::Error(QAbstractSocket::SocketError socketError)
 {
+    qDebug()<<QTime::currentTime().toString()<<errorString();
     if (socketError == QAbstractSocket::RemoteHostClosedError)
         return;
-    Display(errorString().toUtf8());
     this->close();
 }
-/******************************************************************************
- * version:     1.0
- * author:      link
- * date:        2016.07.16
- * brief:       显示信息
-******************************************************************************/
-void TcpSocket::Display(QByteArray msg)
-{
-    TcpMap map;
-    map.insert("TxAddress",ADDR);
-    map.insert("RxAddress",this->peerPort());
-    map.insert("TxCommand",GUEST_DISPLAY);
-    emit SendMessage(map,msg);
 
-    if (isTransmit) {
-        map["TxAddress"] = TransmitPort;
-        emit SendMessage(map,msg);
-    }
-}

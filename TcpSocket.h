@@ -16,8 +16,15 @@
 #include <QNetworkAccessManager>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QUuid>
 
 #include "define.h"
+
+#define NET "./network/"
+#define TMP "./temp/"
+#define CON "./config/"
 
 class TcpSocket : public QTcpSocket
 {
@@ -26,26 +33,22 @@ public:
     explicit TcpSocket(QObject *parent = 0);
 signals:
     void SendMessage(TcpMap map,QByteArray msg);
-public slots:
-    void PutBlock(quint16 addr,quint16 cmd,QByteArray data);
-public:
-    qint64 HeartCount;
-    QUrl UrlInit;
+    void SendJson(QJsonObject json);
 private slots:
-    void Droped(void);
+    void Init(void);
+    void Logout(void);
     void GetBlock(void);
     void GetFileHead(QByteArray msg);
     void GetFileData(QByteArray msg);
+    void PutBlock(quint16 addr,quint16 cmd,QByteArray data);
     void PutFileHead(QByteArray data);
     void PutFileData(qint64 numBytes);
     void ExcuteCmd(quint16 addr,quint16 cmd,QByteArray data);
-    void GuestLogin(TcpMap map,QByteArray msg);
+    void Login(QJsonObject json);
     void Error(QAbstractSocket::SocketError);
-    void Display(QByteArray msg);
-    void ReadMessage(TcpMap map,QByteArray msg);
-
+    void ReadJson(QJsonObject json);
 private:
-    QDir *dir;
+
     QFile *file;
     qint64 LoadSize;
     qint64 BlockSize;
@@ -63,11 +66,13 @@ private:
     QByteArray GetFileMD5;
     QByteArray GetFileName;
 
-    quint8 SockectVersion;
     bool isTransmit;
     int TransmitPort;
 
     QString InitMsg;
+    qint64 HeartCount;
+    QJsonObject LoginMsg;
+    QProcess *proc;
 };
 
 #endif // TCPSOCKET_H

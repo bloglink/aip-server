@@ -1,7 +1,6 @@
 #ifndef DEFINE_H
 #define DEFINE_H
 
-#include <QApplication>
 #define ADDR 6000
 #define GUEST_LOGIN             1000 //登录
 #define GUEST_LOGIN_ERROR       1001 //登录出错
@@ -22,6 +21,7 @@
 #define SHELL_CMD               2004 //发送系统命令
 #define SHELL_DAT               2005 //系统命令返回
 #define ONLINE_DEVICES          2006 //在线设备列表
+#define SERVER_FILES            2007 //服务器文件列表
 #define HEART_BEAT              6000 //心跳
 
 #define WIN_CMD_SWITCH  7000
@@ -46,9 +46,7 @@
 #define  ResAl    0.0043  //  铝材料
 
 
-#define NET "./network/"
-#define TMP "./temp/"
-#define CON "./config/"
+
 
 #ifdef __arm__
 #define GLOBAL_SET "/mnt/nandflash/AIP/Sys.ini"

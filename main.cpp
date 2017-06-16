@@ -1,21 +1,11 @@
-#include "WinServer.h"
-#include <QApplication>
+#include <QCoreApplication>
+#include "WebServer.h"
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QCoreApplication a(argc, argv);
 
-    QFile file;
-    QString qss;
-
-    file.setFileName(":/source/SoftRainBlue.css");
-    file.open(QFile::ReadOnly);
-    qss = QLatin1String(file.readAll());
-    qApp->setStyleSheet(qss);
-
-    WinServer w;
-    w.show();
-    w.resize(1024,768);
+    WebServer w;
 
     return a.exec();
 }

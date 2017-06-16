@@ -13,7 +13,7 @@ public:
 protected:
     void incomingConnection(qintptr handle);
 signals:
-    void NewGuest(quint16 handle);
+    void InitSocket(quint16 handle);
 };
 
 #endif // TCPSERVER_H

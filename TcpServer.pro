@@ -4,28 +4,25 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network sql
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core network sql
+QT       -= gui
 
 TARGET = TcpServer
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-    SqlServer.cpp \
+SOURCES += main.cpp \
+    WebServer.cpp \
     TcpServer.cpp \
     TcpSocket.cpp \
-    WinServer.cpp
+    SqlServer.cpp
 
 HEADERS  += \
-    SqlServer.h \
+    WebServer.h \
     TcpServer.h \
     TcpSocket.h \
-    WinServer.h
+    SqlServer.h
 
-FORMS    += \
-    WinServer.ui
+FORMS    +=
 
-RESOURCES += \
-    image.qrc
+RESOURCES +=

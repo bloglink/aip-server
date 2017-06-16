@@ -1,33 +1,29 @@
 #ifndef SQLSERVER_H
 #define SQLSERVER_H
 
+#include <QDir>
+#include <QFile>
 #include <QTime>
+#include <QUuid>
+#include <QDebug>
 #include <QObject>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QJsonObject>
 #include <QSqlDatabase>
-#include <QDebug>
 
-#include "define.h"
-
-#define SQL "./data/aip-server.db"
+#define SQL_PATH "./nandflash/"
+#define SQL "./nandflash/server.db"
 
 class SqlServer : public QObject
 {
     Q_OBJECT
 public:
     explicit SqlServer(QObject *parent = 0);
-signals:
-    void SendMessage(TcpMap map,QByteArray msg);
 public slots:
     void Init(void);
-    void Quit(void);
-    void ReadMessage(TcpMap map,QByteArray msg);
-    void GuestRecord(TcpMap map,QByteArray msg);
-    void GuestStatus(TcpMap map,QByteArray msg);
-    void GuestRemove(TcpMap map,QByteArray msg);
-    void GuestLogin(TcpMap map,QByteArray msg);
-public:
+    void Insert(QJsonObject json);
+private:
     QSqlDatabase db;
 };
 
