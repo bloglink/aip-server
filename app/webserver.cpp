@@ -15,6 +15,7 @@ WebServer::WebServer(QObject *parent) : QObject(parent)
 
 void WebServer::initServer()
 {
+    qDebug() << "二代综合测试仪服务器试用版V-0.1 topics";
     tcp = new TcpServer(this);
     connect(tcp, SIGNAL(newConnection(quint16)), this, SLOT(newClient(quint16)));
     if (!tcp->listen(QHostAddress::AnyIPv4, 6000))
@@ -167,7 +168,7 @@ void WebServer::recvMaster(quint16 addr, quint16 cmd, QByteArray msg)
 
 void WebServer::initSql()
 {
-    sql = new Sqlite(this);
+    sql = new SqlServer(this);
     sql->connect();
 }
 

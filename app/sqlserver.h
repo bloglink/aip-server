@@ -20,11 +20,11 @@
 
 #include "lqsnowflake.h"
 
-class Sqlite : public QObject
+class SqlServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit Sqlite(QObject *parent = 0);
+    explicit SqlServer(QObject *parent = 0);
 
 public slots:
     void connect(void);

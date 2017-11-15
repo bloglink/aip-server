@@ -16,7 +16,7 @@
 
 #include "tcpserver.h"
 #include "tcpsocket.h"
-#include "sqlite.h"
+#include "sqlserver.h"
 
 class WebServer : public QObject
 {
@@ -43,7 +43,7 @@ private slots:
 private:
     TcpServer *tcp;
     TcpServer *usr;
-    Sqlite *sql;
+    SqlServer *sql;
     QTimer *timer;
 
     QMap<int, TcpSocket*> clients;

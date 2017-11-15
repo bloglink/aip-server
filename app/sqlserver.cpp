@@ -6,13 +6,13 @@
  * author:      zhaonanlin
  * brief:       数据库
 *******************************************************************************/
-#include "sqlite.h"
+#include "sqlserver.h"
 
-Sqlite::Sqlite(QObject *parent) : QObject(parent)
+SqlServer::SqlServer(QObject *parent) : QObject(parent)
 {
 }
 
-void Sqlite::connect()
+void SqlServer::connect()
 {
     db = QSqlDatabase::addDatabase("QMYSQL3", "mysql");
     db.setHostName("192.168.1.55");
@@ -27,7 +27,7 @@ void Sqlite::connect()
     }
 }
 
-void Sqlite::appendOnline(QJsonObject msg)
+void SqlServer::appendOnline(QJsonObject msg)
 {
     double recUuid = snow.getId();
     double devUuid = snow.getId();
@@ -89,7 +89,7 @@ void Sqlite::appendOnline(QJsonObject msg)
     }
 }
 
-void Sqlite::deleteOnline(QJsonObject msg)
+void SqlServer::deleteOnline(QJsonObject msg)
 {
     double recUuid = snow.getId();
     double devUuid = snow.getId();
@@ -107,21 +107,14 @@ void Sqlite::deleteOnline(QJsonObject msg)
     query.bindValue(":devAddr", devAddr);
     if (!query.exec()) {
         qDebug() << query.lastError();
+        return;
     }
-    if (query.next()) {
-        devUuid = query.value(0).toDouble();
-    } else {
-        query.prepare("insert into aip_device values(?,?,?,?,?,?,?)");
-        query.bindValue(0, devUuid);
-        query.bindValue(1, devAddr);
-        query.bindValue(2, devNumb);
-        query.bindValue(3, "--");
-        query.bindValue(4, "--");
-        query.bindValue(5, "--");
-        query.bindValue(6, "--");
-        query.exec();
+    if (!query.next()) {
+        qDebug() << "no such device";
+        return;
     }
 
+    devUuid = query.value(0).toDouble();
     query.prepare("delete from aip_online where devAddr=:devAddr and devNumb=:devNumb");
     query.bindValue(":devAddr", devAddr);
     query.bindValue(":devNumb", devNumb);
@@ -144,7 +137,7 @@ void Sqlite::deleteOnline(QJsonObject msg)
     }
 }
 
-bool Sqlite::checkMaster(QJsonObject msg)
+bool SqlServer::checkMaster(QJsonObject msg)
 {
     QSqlQuery query(db);
     query.prepare("select id from aip_master where name=? and password=?");
