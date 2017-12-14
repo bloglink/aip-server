@@ -24,7 +24,8 @@ HEADERS  += \
     TcpSocket.h \
     SqlServer.h
 
-RESOURCES +=
+RESOURCES += \
+    image.qrc
 
 FORMS += \
     CWinServer.ui

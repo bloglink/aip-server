@@ -17,11 +17,10 @@ protected:
     void incomingConnection(qintptr handle);
 
 signals:
-    void SendMsg(quint16 port, QByteArray msg);
+    void ExcuteCmd(quint16 addr,quint16 cmd,QByteArray data);
 public slots:
     void AllQuit(void);
-    void TcpQuit(quint16);
-    void RecvMsg(quint16 port, QByteArray msg);
+    void TransformCmd(quint16 addr0,quint16 addr1,quint16 cmd,QByteArray data);
 public:
     QList<TcpSocket *> Pool;
     QList<quint16 > Port;

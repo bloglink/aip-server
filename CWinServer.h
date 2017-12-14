@@ -1,16 +1,22 @@
 #ifndef CWINSERVER_H
 #define CWINSERVER_H
 
+#include <QFile>
 #include <QTimer>
 #include <QThread>
 #include <QWidget>
 #include <QString>
+#include <QProcess>
 #include <QByteArray>
 #include <QStringList>
 #include <QButtonGroup>
 #include <QTableWidgetItem>
+#include <QHostAddress>
+#include <QCryptographicHash>
 
 #include "TcpServer.h"
+#include "TcpSocket.h"
+#include "SqlServer.h"
 
 #define W_ROW 250
 #define W_COL 6
@@ -35,13 +41,29 @@ private slots:
     void KeyInit(void);
     void KeyJudge(int key);
     void DatInit(void);
-    void SeverInit(void);
-    void RecvMsg(quint16 port, QByteArray msg);
-    void SendMsg(quint16 port, QByteArray msg);
+    void SqlInit(void);
+    void TcpInit(void);
+    void TcpKeepLive(void);
+    void TcpPutBlock(quint16 addr,quint16 cmd,QByteArray msg);
+    void TcpLogin(quint16 addr,QByteArray msg);
+    void TcpClientInit(QByteArray msg);
+    void TcpClientQuit(quint16 addr);
+    void TcpPutListMsg(quint16 addr);
+    void TcpPutCommandMsg(void);
+    void TcpPutFileHeadMsg(void);
+    void TcpGetFileHeadMsg(void);
+    void ExcuteCmd(quint16 addr,quint16 cmd, QByteArray msg);
+    quint16 CurrentPort(void);
+
 private:
-    TcpServer *server;
+    QFile *file;
+    QTimer *timer;
+    TcpServer *tcp;
+    SqlServer *sql;
     QStringList ItemText;
-    QList<QTableWidgetItem *> tableItem;
+
+
+
 };
 
 #endif // CWINSERVER_H

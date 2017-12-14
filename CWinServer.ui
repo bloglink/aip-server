@@ -14,9 +14,9 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>青岛艾普智能仪器服务端V0.1by赵楠林</string>
+   <string>青岛艾普智能仪器综合测试仪后台服务端V0.1by赵楠林</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="3,1">
    <item>
     <widget class="QTableWidget" name="tabTcp">
      <property name="selectionBehavior">
@@ -64,69 +64,140 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="LayoutB">
-     <property name="spacing">
-      <number>20</number>
-     </property>
-     <item>
-      <widget class="QLineEdit" name="EditB">
+    <layout class="QGridLayout" name="LayoutCtrl" columnstretch="3,1,3,1">
+     <item row="0" column="0">
+      <widget class="QLineEdit" name="EditPutFile">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="acceptDrops">
         <bool>false</bool>
        </property>
        <property name="text">
-        <string/>
+        <string>/home/link/aip</string>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="KeyFile">
-       <property name="text">
-        <string>发送文件</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="LayoutA">
-     <property name="spacing">
-      <number>20</number>
-     </property>
-     <item>
-      <widget class="QLineEdit" name="EditA">
-       <property name="acceptDrops">
-        <bool>false</bool>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="KeyPutFile">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
        <property name="text">
-        <string/>
+        <string>服务器-&gt;客户</string>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="KeyCmd">
-       <property name="text">
-        <string>发送命令</string>
-       </property>
-      </widget>
+     <item row="0" column="2" rowspan="4">
+      <widget class="QTextBrowser" name="Text"/>
      </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="LayoutC">
-     <property name="spacing">
-      <number>20</number>
-     </property>
-     <item>
-      <widget class="QLineEdit" name="EditC">
-       <property name="acceptDrops">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
+     <item row="0" column="3" rowspan="2">
       <widget class="QPushButton" name="KeyBegin">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>开始监听</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="EditGetFile">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>/mnt/aip</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="KeyGetFile">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>客户-&gt;服务器</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLineEdit" name="EditSysCmd">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="acceptDrops">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>ls</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QPushButton" name="KeySysCmd">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>系统命令</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3" rowspan="2">
+      <widget class="QPushButton" name="KeyTrust">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>添加信任</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLineEdit" name="EditDevCmd">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QPushButton" name="KeyDevCmd">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>软件命令</string>
        </property>
       </widget>
      </item>

@@ -5,14 +5,25 @@ SqlServer::SqlServer(QObject *parent) : QObject(parent)
 
 }
 
-void SqlServer::SqlOpen(QString name)
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2015.11.21
+  * brief:      打开数据库
+******************************************************************************/
+void SqlServer::Init()
 {
-    db = QSqlDatabase::addDatabase("QSQLITE",name);
+    db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(SQL);
     db.open();
 }
-
-void SqlServer::SqlClose(void)
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2015.11.21
+  * brief:      退出
+******************************************************************************/
+void SqlServer::Quit(void)
 {
     QString name;
     {
@@ -20,95 +31,97 @@ void SqlServer::SqlClose(void)
     }//超出作用域，隐含对象QSqlDatabase::database()被删除。
     QSqlDatabase::removeDatabase(name);
 }
-
 /******************************************************************************
   * version:    1.0
   * author:     link
   * date:       2015.11.21
-  * brief:      插入一条记录
+  * brief:      添加状态记录
 ******************************************************************************/
-void SqlServer::SqlInsert(QString msg)
+void SqlServer::InsertState(QStringList msg)
 {
-    QSqlQuery query(db);
-    QStringList p = msg.split(" ");
-
-    if (p.size() != 6)
+    if (msg.size() != 6)
         return;
-
-    SqlCreate(p.at(3));
-    int max = SqlMaxCount(p.at(3));
-
-    QString in = "insert into :table (ID,IP,NO,MAC,TIME,STATE,VERSION)";
-    in += "values(:ID,:IP,:NO,:MAC,:TIME,:STATE,:VERSION)";
-    in.replace(":table",p.at(3));
-
-    query.prepare(in);
-    query.bindValue(":ID",max+1);
-    query.bindValue(":IP",p.at(1));
-    query.bindValue(":NO",p.at(3));
-    query.bindValue(":MAC",p.at(4));
-    query.bindValue(":TIME",QTime::currentTime().toString());
-    query.bindValue(":STATE",p.at(6));
-    query.bindValue(":VERSION",p.at(5));
-    query.exec();
-}
-/******************************************************************************
-  * version:    1.0
-  * author:     link
-  * date:       2015.11.21
-  * brief:      创建表
-******************************************************************************/
-void SqlServer::SqlCreate(QString msg)
-{
-    if (SqlIsExist(msg))
-        return;
-
-    QString in = "create table :table (ID int primary key,";
-    in += "IP varchar(20),";
-    in += "NO varchar(20),";
-    in += "MAC varchar(20),";
-    in += "TIME varchar(20),";
-    in += "STATE varchar(20),";
-    in += "VERSION varchar(20))";
-    in.replace(":table",msg);
-
-    QSqlQuery query(db);
-    query.prepare(in);
-    query.exec();
-}
-/******************************************************************************
-  * version:    1.0
-  * author:     link
-  * date:       2015.11.21
-  * brief:      判断表是否存在
-******************************************************************************/
-bool SqlServer::SqlIsExist(QString msg)
-{
     QSqlQuery query(db);
 
-    query.prepare("select count(*) from sqlite_master where type='table' and name=:name");
-    query.bindValue(":name",msg);
-    query.exec( );
-    if(query.next())
-    {
-        if(query.value(0).toInt() == 0)
-            return false;
-        else
-            return true;
-    }
-    return false;
-}
-/******************************************************************************
-  * version:    1.0
-  * author:     link
-  * date:       2015.11.21
-  * brief:      获取最大ID
-******************************************************************************/
-int SqlServer::SqlMaxCount(QString msg)
-{
-    QSqlQuery query(db);
-    QString m = QString("select max(id) from %1").arg(msg);
-    query.exec(m);
+    query.exec("select max(id) from NetRecord");
     query.next();
-    return query.value(0).toInt();
+    int max = query.value(0).toInt();
+
+    QString t = QDateTime::currentDateTime().toString("yyyyMMddhmss");
+
+    QString in = "insert into NetRecord (ID,IP,NO,MAC,TIME,STATE,VERSION)";
+    in += "values(:ID,:IP,:NO,:MAC,:TIME,:STATE,:VERSION)";
+    query.prepare(in);
+    query.bindValue(":ID",     max+1);
+    query.bindValue(":IP",     msg.at(1));
+    query.bindValue(":NO",     msg.at(3));
+    query.bindValue(":MAC",    msg.at(4));
+    query.bindValue(":TIME",   t);
+    query.bindValue(":STATE",  msg.at(0));
+    query.bindValue(":VERSION",msg.at(5));
+    query.exec();
+}
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2015.11.21
+  * brief:      添加信任记录
+******************************************************************************/
+void SqlServer::InsertTrust(QString msg)
+{
+    QSqlQuery query(db);
+
+    query.exec("select max(id) from NetTrust");
+    query.next();
+    int max = query.value(0).toInt();
+
+    QString in = "insert into NetTrust (ID,MAC)";
+    in += "values(:ID,:MAC)";
+    query.prepare(in);
+    query.bindValue(":ID", max+1);
+    query.bindValue(":MAC",msg);
+    query.exec();
+}
+/******************************************************************************
+  * version:    1.0
+  * author:     link
+  * date:       2015.11.21
+  * brief:      添加
+******************************************************************************/
+void SqlServer::InsertUsers(QString msg)
+{
+    QSqlQuery query(db);
+
+    query.exec("select max(id) from NetUsers");
+    query.next();
+    int max = query.value(0).toInt();
+
+    QString in = "insert into NetUsers (ID,USER)";
+    in += "values(:ID,:USER)";
+    query.prepare(in);
+    query.bindValue(":ID", max+1);
+    query.bindValue(":USER",msg);
+    query.exec();
+}
+
+QStringList SqlServer::ListUsers()
+{
+    QSqlQuery query(db);
+    QStringList temp;
+
+    query.exec("select USER from NetUsers");
+    while(query.next())
+        temp.append(query.value(0).toString());
+    return temp;
+}
+
+QStringList SqlServer::ListTrust()
+{
+    QSqlQuery query(db);
+    QStringList temp;
+
+    query.exec("select MAC from NetTrust");
+    while(query.next())
+        temp.append(query.value(0).toString());
+    return temp;
 }

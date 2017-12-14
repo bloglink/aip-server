@@ -7,8 +7,9 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlDatabase>
+#include <QDebug>
 
-#define SQL "./aip-server.db"
+#define SQL "./data/aip-server.db"
 
 class SqlServer : public QObject
 {
@@ -17,12 +18,13 @@ public:
     explicit SqlServer(QObject *parent = 0);
 
 public slots:
-    void SqlOpen(QString name);
-    void SqlClose(void);
-    void SqlInsert(QString msg);
-    void SqlCreate(QString msg);
-    bool SqlIsExist(QString msg);
-    int SqlMaxCount(QString msg);
+    void Init(void);
+    void Quit(void);
+    void InsertState(QStringList msg);
+    void InsertTrust(QString msg);
+    void InsertUsers(QString msg);
+    QStringList ListUsers(void);
+    QStringList ListTrust(void);
 public:
     QSqlDatabase db;
 };

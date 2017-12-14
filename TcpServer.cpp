@@ -24,16 +24,12 @@ void TcpServer::incomingConnection(qintptr handle)
 {
     Pool.append(new TcpSocket(this));
     if (Pool.last()->setSocketDescriptor(handle)) {
-        qDebug()<<"new tcp" << QTime::currentTime().toString()<<Pool.size()<<Pool.last()->peerPort();
+        qDebug()<<"new tcp" << QTime::currentTime().toString();
         Port.append(Pool.last()->peerPort());
         connect(Pool.last(),
-                SIGNAL(TcpQuit(quint16)),
+                SIGNAL(TransformCmd(quint16,quint16,quint16,QByteArray)),
                 this,
-                SLOT(TcpQuit(quint16)));
-        connect(Pool.last(),
-                SIGNAL(SendMsg(quint16,QByteArray)),
-                this,
-                SLOT(RecvMsg(quint16,QByteArray)));
+                SLOT(TransformCmd(quint16,quint16,quint16,QByteArray)));
     }
 }
 /******************************************************************************
@@ -53,53 +49,21 @@ void TcpServer::AllQuit()
   * version:    1.0
   * author:     link
   * date:       2016.03.18
-  * brief:      连接断开
+  * brief:      转发数据
 ******************************************************************************/
-void TcpServer::TcpQuit(quint16 port)
+void TcpServer::TransformCmd(quint16 addr0,quint16 addr1,quint16 cmd,QByteArray data)
 {
-    for (int i=0; i<Pool.size(); i++) {
-        if (Pool.at(i)->peerPort() == port) {
-            Pool.removeAt(i);
-            Port.removeAt(i);
-            emit SendMsg(port,"Q");
-        }
-    }
-}
-/******************************************************************************
-  * version:    1.0
-  * author:     link
-  * date:       2016.03.18
-  * brief:      接收数据
-******************************************************************************/
-void TcpServer::RecvMsg(quint16 port, QByteArray msg)
-{
-    if (msg.at(0) == 'T') {
-        int o = 0;
-        int t = 0;
-        quint16 tp = quint16(msg.remove(0,2).toInt());
-        for (int i=0; i<Port.size(); i++) {
-            if (Port.at(i) == port) {
-                o = i;
-                break;
+    if (addr1 == ADDR) {
+        emit ExcuteCmd(addr0,cmd,data);
+     } else {
+        for (int i=0; i<Pool.size(); i++) {
+            if (Pool.at(i)->peerPort() == addr1) {
+                Pool.at(i)->TransmitAddr = addr0;
+                if (cmd == ServerGetHead)
+                    Pool.at(i)->PutBlock(ADDR,cmd,data);
+                else
+                    Pool.at(i)->PutBlock(addr0,cmd,data);
             }
-        }
-        for (int i=0; i<Port.size(); i++) {
-            if (Port.at(i) == tp) {
-                t = i;
-                break;
-            }
-        }
-        Port[o] = tp;
-        Port[t] = port;
-        return;
-    }
-
-    for (int i=0; i<Port.size(); i++) {
-        if (Port.at(i) == port) {
-            if (Pool.at(i)->peerPort() == port)
-                emit SendMsg(port,msg);
-            else
-                Pool.at(i)->WriteMsg(msg);
         }
     }
 }
